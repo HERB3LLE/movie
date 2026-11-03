@@ -9,9 +9,9 @@
 *{box-sizing:border-box}
 body{
  margin:0;background:#100e18;color:#f8f3fb;
- font-family:system-ui,-apple-system,sans-serif;
+ font-family:system-ui,-apple-system,sans-serif
 }
-header,main{max-width:1100px;margin:auto;padding:22px}
+header,main{max-width:1200px;margin:auto;padding:18px}
 header{display:flex;justify-content:space-between;align-items:center}
 h1{margin:0;color:#f3a6cb}
 button{
@@ -19,85 +19,55 @@ button{
  background:#f3a6cb;color:#241321;font-weight:bold;cursor:pointer
 }
 button.alt{background:#302a3d;color:white}
-input,textarea,select{
+input,select{
  background:#171421;color:white;border:1px solid #494057;
  border-radius:9px;padding:11px;width:100%
 }
-.hero,.panel,.card{
+.panel,.hero{
  background:#1b1825;border:1px solid #393246;
  border-radius:18px;padding:18px;margin:15px 0
 }
 .hero{background:linear-gradient(120deg,#3b2944,#211b2d)}
 .muted{color:#aaa1b5;font-size:13px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
-.card{padding:0;overflow:hidden}
-.poster{
- aspect-ratio:3/4;background:#33283d;
- display:grid;place-items:center;font-size:45px;
- overflow:hidden
-}
-.poster img{width:100%;height:100%;object-fit:cover}
-.info{padding:13px}
 .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 .field{flex:1;min-width:180px;margin:9px 0}
 .field label{display:block;color:#aaa1b5;font-size:12px;margin-bottom:6px}
-.seatmap{display:grid;grid-template-columns:repeat(12,1fr);gap:5px}
-.seat{padding:7px 0;background:#393247;color:white;font-size:11px}
-.seat.taken{background:#76536d}
-.seat.mine{background:#f3a6cb;color:#211321}
-.screen{
- height:5px;margin:28px 8%;background:#f0c8e0;
- box-shadow:0 10px 30px #d99bc455;border-radius:50%
-}
-#admin{display:none}
-
-/* 영화관 재생 화면 */
-#cinemaPlayer{
- display:none;
- background:#08070c;
- border:1px solid #51435c;
- border-radius:18px;
- padding:16px;
- margin:20px 0;
-}
-#cinemaPlayer.active{display:block}
-.player{
- width:100%;
- aspect-ratio:16/9;
- background:#000;
- border-radius:12px;
- overflow:hidden;
-}
-.player iframe{
- width:100%;
- height:100%;
- border:0;
-}
-.playerTop{
- display:flex;
- align-items:center;
- gap:10px;
- margin-bottom:14px;
-}
-.playerTop h2{
- flex:1;
- font-size:19px;
- margin:0;
-}
-#playerNote{margin:12px 0 0}
 .pill{border:1px solid #54475e;border-radius:30px;padding:8px 12px;font-size:13px}
-footer{text-align:center;color:#777;padding:25px}
+#admin{display:none}
+#cinema{
+ width:100%;height:min(68vh,650px);min-height:390px;
+ background:#08070c;border:1px solid #51435c;
+ border-radius:18px;overflow:hidden;position:relative
+}
+#stage{width:100%;height:100%;display:block}
+#hint{
+ position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+ background:#100e18cc;padding:8px 13px;border-radius:20px;
+ font-size:12px;white-space:nowrap;pointer-events:none
+}
+#seatInfo{
+ position:absolute;top:12px;left:12px;
+ background:#100e18dd;padding:9px 13px;border-radius:12px;
+ font-size:13px
+}
+#playerPanel{display:none}
+#playerPanel.active{display:block}
+.player{aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}
+.player iframe{width:100%;height:100%;border:0}
+#films{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.card{background:#211c2b;border:1px solid #393246;border-radius:15px;overflow:hidden}
+.poster{aspect-ratio:3/4;background:#33283d}
+.poster img{width:100%;height:100%;object-fit:cover}
+.info{padding:12px}
 #login{
  display:none;position:fixed;inset:0;background:#000d;
- align-items:center;justify-content:center;padding:15px
+ align-items:center;justify-content:center;padding:15px;z-index:10
 }
-.box{width:min(850px,100%);background:#191522;padding:16px;border-radius:18px}
-#login .box{width:min(450px,100%)}
+.box{width:min(450px,100%);background:#191522;padding:20px;border-radius:18px}
+footer{text-align:center;color:#777;padding:25px}
 @media(max-width:600px){
- header,main{padding:15px}
- .seatmap{gap:3px}
- .seat{font-size:9px;padding:6px 0}
- .playerTop h2{font-size:16px}
+ header,main{padding:12px}
+ #cinema{height:60vh;min-height:350px}
 }
 </style>
 </head>
@@ -116,31 +86,23 @@ footer{text-align:center;color:#777;padding:25px}
 
 <main>
  <section class="hero">
-  <h2>오늘은 뭐 볼까?</h2>
+  <h2>냐쭙 시네마에 오신 걸 환영해!</h2>
   <div class="row">
    <span class="pill">👥 접속 <b id="count">0</b>명</span>
    <span class="pill">💗 <b id="hearts">0</b></span>
+   <span class="pill">💺 88석</span>
   </div>
  </section>
-
- <!-- 영상이 재생되는 영화관 화면 -->
- <section id="cinemaPlayer">
-  <div class="playerTop">
-   <h2 id="playing">상영 중</h2>
-   <button class="alt" id="closePlayer">상영 종료</button>
-  </div>
-  <div id="frame" class="player"></div>
-  <p id="playerNote" class="muted"></p>
- </section>
-
- <h2>상영작</h2>
- <section id="films" class="grid"></section>
 
  <section class="panel">
-  <h2>상영관 좌석</h2>
-  <p class="muted">이름을 입력하고 좌석을 선택해 줘.</p>
-
-  <div class="row">
+  <h2>🎥 3D 상영관</h2>
+  <p class="muted">화면을 드래그해서 영화관을 둘러봐. 두 손가락으로 확대·축소할 수도 있어.</p>
+  <div id="cinema">
+   <canvas id="stage"></canvas>
+   <div id="seatInfo">좌석을 클릭해서 선택해 줘.</div>
+   <div id="hint">드래그: 시점 회전 · 스크롤/핀치: 확대 축소</div>
+  </div>
+  <div class="row" style="margin-top:12px">
    <div class="field">
     <label>관람객 이름</label>
     <input id="guest" maxlength="16" placeholder="닉네임">
@@ -148,10 +110,21 @@ footer{text-align:center;color:#777;padding:25px}
    <button class="alt" id="stand">일어서기</button>
    <button id="heart">💗 하트 보내기</button>
   </div>
-
-  <div class="screen"></div>
-  <div id="seats" class="seatmap"></div>
   <p id="myseat" class="muted">선택한 좌석 없음</p>
+ </section>
+
+ <section id="playerPanel" class="panel">
+  <div class="row">
+   <h2 id="playing" style="flex:1">상영 중</h2>
+   <button class="alt" id="closePlayer">상영 종료</button>
+  </div>
+  <div id="frame" class="player"></div>
+  <p class="muted" id="playerNote"></p>
+ </section>
+
+ <section class="panel">
+  <h2>🎬 상영작</h2>
+  <div id="films"><p class="muted">상영작을 불러오는 중...</p></div>
  </section>
 
  <section id="admin" class="panel">
@@ -159,38 +132,30 @@ footer{text-align:center;color:#777;padding:25px}
    <h2 style="flex:1">관리자 · 상영작 관리</h2>
    <button class="alt" id="logout">로그아웃</button>
   </div>
-
   <form id="add">
-   <div class="row">
-    <div class="field">
-     <label>제목</label>
-     <input id="title" required maxlength="80">
-    </div>
-    <div class="field">
-     <label>종류</label>
-     <select id="type">
-      <option value="youtube">유튜브</option>
-      <option value="weverse">위버스</option>
-     </select>
-    </div>
+   <div class="field">
+    <label>제목</label>
+    <input id="title" required maxlength="80">
    </div>
-
+   <div class="field">
+    <label>영상 종류</label>
+    <select id="type">
+     <option value="youtube">유튜브</option>
+     <option value="weverse">위버스</option>
+    </select>
+   </div>
    <div class="field">
     <label>영상 링크</label>
     <input id="url" type="url" required>
    </div>
-
-   <div class="row">
-    <div class="field">
-     <label>포스터 이미지 링크</label>
-     <input id="poster" type="url">
-    </div>
-    <div class="field">
-     <label>설명</label>
-     <input id="desc">
-    </div>
+   <div class="field">
+    <label>포스터 이미지 URL</label>
+    <input id="poster" type="url">
    </div>
-
+   <div class="field">
+    <label>설명</label>
+    <input id="desc">
+   </div>
    <button>상영작 등록</button>
   </form>
  </section>
@@ -217,48 +182,310 @@ footer{text-align:center;color:#777;padding:25px}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+import {OrbitControls} from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js";
 
-<script>
-// Supabase 연결
 const SUPABASE_URL="https://jaedeuxeiqpphpjaxgiv.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_SSHP4r2Ge7BACfUyfx700Q_Z5OvbZIa";
-
-const db=supabase.createClient(
- SUPABASE_URL,
- SUPABASE_PUBLISHABLE_KEY
-);
-
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 
 let films=[];
 let admin=false;
 let seat=null;
 let presence={};
-let channel;
+let channel=null;
 let heartCount=0;
+let seats3D=[];
+let selectedSeat=null;
 
 let sid=localStorage.nyajjuSid||
  (localStorage.nyajjuSid=crypto.randomUUID());
 
 $("guest").value=localStorage.nyajjuName||"";
 
-// 유튜브 영상 ID 추출
+// --------------------
+// 3D 영화관
+// --------------------
+
+const canvas=$("stage");
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x100c18);
+scene.fog=new THREE.Fog(0x100c18,17,38);
+
+const camera=new THREE.PerspectiveCamera(
+ 55,1,0.1,100
+);
+camera.position.set(0,5,13);
+
+const renderer=new THREE.WebGLRenderer({
+ canvas,
+ antialias:true
+});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+
+const controls=new OrbitControls(camera,canvas);
+controls.enableDamping=true;
+controls.dampingFactor=0.06;
+controls.minDistance=5;
+controls.maxDistance=21;
+controls.maxPolarAngle=Math.PI*0.49;
+controls.minPolarAngle=0.35;
+controls.target.set(0,2,-3);
+controls.enablePan=false;
+
+scene.add(new THREE.HemisphereLight(0xc9b8e8,0x211421,2));
+
+const ceilingLight=new THREE.PointLight(0xffc9e5,35,25);
+ceilingLight.position.set(0,7,-3);
+scene.add(ceilingLight);
+
+const floorLight=new THREE.PointLight(0x9e75ff,15,18);
+floorLight.position.set(0,2,1);
+scene.add(floorLight);
+
+function material(color,roughness=0.8){
+ return new THREE.MeshStandardMaterial({
+  color,roughness
+ });
+}
+
+function box(w,h,d,x,y,z,color){
+ const mesh=new THREE.Mesh(
+  new THREE.BoxGeometry(w,h,d),
+  material(color)
+ );
+ mesh.position.set(x,y,z);
+ mesh.castShadow=true;
+ mesh.receiveShadow=true;
+ scene.add(mesh);
+ return mesh;
+}
+
+// 바닥
+box(15,0.35,23,0,-0.2,-3,0x292333);
+
+// 벽
+box(15,7,0.4,0,3.3,-14.5,0x21182a);
+box(0.4,7,23,-7.5,3.3,-3,0x21182a);
+box(0.4,7,23,7.5,3.3,-3,0x21182a);
+
+// 천장
+box(15,0.35,23,0,7,-3,0x191522);
+
+// 스크린
+const screen=box(10,5,0.18,0,3.5,-13.8,0x17131d);
+screen.material.emissive=new THREE.Color(0x30203d);
+screen.material.emissiveIntensity=0.8;
+
+// 스크린 테두리
+box(10.5,0.16,0.25,0,6.1,-13.6,0xe8a9d0);
+box(10.5,0.16,0.25,0,0.9,-13.6,0xe8a9d0);
+box(0.16,5.3,0.25,-5.2,3.5,-13.6,0xe8a9d0);
+box(0.16,5.3,0.25,5.2,3.5,-13.6,0xe8a9d0);
+
+// 스크린 조명
+const screenLight=new THREE.SpotLight(0xf5c5e5,60,25,Math.PI/4,0.5);
+screenLight.position.set(0,6,-11);
+screenLight.target.position.set(0,1,1);
+scene.add(screenLight,screenLight.target);
+
+// 좌석 만들기
+const seatMaterial=material(0x8f426f);
+const seatDark=material(0x542d50);
+const seatLeg=material(0x77717e);
+
+function makeSeat(num,row,col){
+ const group=new THREE.Group();
+
+ // 좌석 쿠션
+ const cushion=new THREE.Mesh(
+  new THREE.BoxGeometry(0.68,0.22,0.68),
+  seatMaterial
+ );
+ cushion.position.y=0.58;
+ cushion.castShadow=true;
+ group.add(cushion);
+
+ // 등받이
+ const back=new THREE.Mesh(
+  new THREE.BoxGeometry(0.68,0.95,0.2),
+  seatDark
+ );
+ back.position.set(0,1.05,-0.24);
+ back.castShadow=true;
+ group.add(back);
+
+ // 팔걸이
+ for(const side of [-1,1]){
+  const arm=new THREE.Mesh(
+   new THREE.BoxGeometry(0.12,0.4,0.65),
+   seatLeg
+  );
+  arm.position.set(side*0.39,0.78,0);
+  group.add(arm);
+ }
+
+ // 다리
+ for(const side of [-1,1]){
+  const leg=new THREE.Mesh(
+   new THREE.BoxGeometry(0.08,0.45,0.08),
+   seatLeg
+  );
+  leg.position.set(side*0.23,0.25,0);
+  group.add(leg);
+ }
+
+ const x=(col-5)*1.12;
+ const z=-10+row*1.75;
+
+ group.position.set(x,0,z);
+ group.userData={seatNumber:num,row,col};
+ scene.add(group);
+ seats3D.push(group);
+ return group;
+}
+
+// 8줄 x 11석
+let number=1;
+for(let row=0;row<8;row++){
+ for(let col=0;col<11;col++){
+  makeSeat(number,row,col);
+  number++;
+ }
+}
+
+// 통로 조명
+for(let row=0;row<8;row++){
+ const z=-10+row*1.75;
+ for(const x of [-6.7,6.7]){
+  const lamp=new THREE.PointLight(0xeaa4d3,2,2);
+  lamp.position.set(x,0.35,z);
+  scene.add(lamp);
+ }
+}
+
+// 벽 장식
+for(let i=0;i<7;i++){
+ const light=new THREE.PointLight(0xa66cba,5,5);
+ light.position.set(-6.9,3,-12+i*3);
+ scene.add(light);
+}
+
+// 바닥 안내등
+for(let i=0;i<8;i++){
+ box(0.08,0.04,0.6,-6.7,0.02,-10+i*1.75,0xf3a6cb);
+ box(0.08,0.04,0.6,6.7,0.02,-10+i*1.75,0xf3a6cb);
+}
+
+// 조명과 그림자
+const mainLight=new THREE.DirectionalLight(0xffffff,1.2);
+mainLight.position.set(3,8,5);
+mainLight.castShadow=true;
+scene.add(mainLight);
+
+function resize(){
+ const w=canvas.clientWidth;
+ const h=canvas.clientHeight;
+ camera.aspect=w/h;
+ camera.updateProjectionMatrix();
+ renderer.setSize(w,h,false);
+}
+new ResizeObserver(resize).observe(canvas);
+resize();
+
+function animate(){
+ requestAnimationFrame(animate);
+ controls.update();
+ renderer.render(scene,camera);
+}
+animate();
+
+// 좌석 클릭
+const raycaster=new THREE.Raycaster();
+const pointer=new THREE.Vector2();
+
+canvas.addEventListener("click",e=>{
+ const rect=canvas.getBoundingClientRect();
+ pointer.x=((e.clientX-rect.left)/rect.width)*2-1;
+ pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
+ raycaster.setFromCamera(pointer,camera);
+
+ const hits=raycaster.intersectObjects(seats3D,true);
+ if(!hits.length)return;
+
+ let obj=hits[0].object;
+ while(obj.parent&&!obj.userData.seatNumber){
+  obj=obj.parent;
+ }
+ if(!obj.userData.seatNumber)return;
+
+ chooseSeat(obj.userData.seatNumber);
+});
+
+function chooseSeat(n){
+ const all=Object.values(presence).flat();
+ const occupied=all.find(p=>p.seat===n&&p.sid!==sid);
+
+ if(occupied){
+  alert("이미 다른 관람객이 앉아 있는 자리야.");
+  return;
+ }
+
+ if(!$("guest").value.trim()){
+  alert("먼저 관람객 이름을 입력해 줘.");
+  $("guest").focus();
+  return;
+ }
+
+ seat=seat===n?null:n;
+ selectedSeat=seat;
+ updateSeatVisual();
+ track();
+}
+
+function updateSeatVisual(){
+ const all=Object.values(presence).flat();
+
+ seats3D.forEach(group=>{
+  const n=group.userData.seatNumber;
+  const occupant=all.find(p=>p.seat===n);
+  const mine=n===seat;
+
+  group.children.forEach((part,i)=>{
+   if(i===0||i===1){
+    if(mine)part.material=material(0xf3a6cb);
+    else if(occupant)part.material=material(0x76516f);
+    else part.material=i===0?seatMaterial:seatDark;
+   }
+  });
+ });
+
+ $("myseat").textContent=seat
+  ?`내 자리: ${seat}번`
+  :"선택한 좌석 없음";
+
+ $("seatInfo").textContent=seat
+  ?`${seat}번 좌석에 선택했어`
+  :"좌석을 클릭해서 선택해 줘.";
+}
+
+// --------------------
+// 유튜브 영상
+// --------------------
+
 function yt(url){
  try{
   const u=new URL(url);
-
-  if(u.hostname.includes("youtu.be"))
-   return u.pathname.slice(1);
-
+  if(u.hostname.includes("youtu.be"))return u.pathname.slice(1);
   if(u.hostname.includes("youtube.com")){
-   if(u.pathname==="/watch")
-    return u.searchParams.get("v");
-
-   if(u.pathname.startsWith("/embed/"))
-    return u.pathname.split("/")[2];
-
-   if(u.pathname.startsWith("/shorts/"))
-    return u.pathname.split("/")[2];
+   if(u.pathname==="/watch")return u.searchParams.get("v");
+   if(u.pathname.startsWith("/embed/"))return u.pathname.split("/")[2];
+   if(u.pathname.startsWith("/shorts/"))return u.pathname.split("/")[2];
   }
  }catch(e){}
  return null;
@@ -266,23 +493,56 @@ function yt(url){
 
 function esc(s){
  return String(s||"").replace(/[&<>"']/g,c=>({
-  "&":"&amp;",
-  "<":"&lt;",
-  ">":"&gt;",
-  '"':"&quot;",
-  "'":"&#39;"
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
  }[c]));
 }
 
-// 상영작 불러오기
+function watch(id){
+ const f=films.find(x=>x.id===id);
+ if(!f)return;
+
+ if(f.type==="weverse"){
+  window.open(f.video_url,"_blank","noopener");
+  return;
+ }
+
+ const videoId=yt(f.video_url);
+ if(!videoId){
+  alert("유튜브 링크를 확인해 줘.");
+  return;
+ }
+
+ $("playing").textContent=f.title;
+ $("frame").innerHTML="";
+
+ const iframe=document.createElement("iframe");
+ iframe.src="https://www.youtube-nocookie.com/embed/"+
+  encodeURIComponent(videoId)+"?autoplay=1&rel=0";
+ iframe.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";
+ iframe.allowFullscreen=true;
+ iframe.title=f.title;
+
+ $("frame").append(iframe);
+ $("playerNote").textContent="영상에 따라 외부 삽입 재생이 제한될 수 있어.";
+ $("playerPanel").classList.add("active");
+ $("playerPanel").scrollIntoView({behavior:"smooth"});
+}
+
+$("closePlayer").onclick=()=>{
+ $("frame").innerHTML="";
+ $("playerPanel").classList.remove("active");
+};
+
+// --------------------
+// 상영작
+// --------------------
+
 async function load(){
- const {data,error}=await db
-  .from("films")
-  .select("*")
-  .order("created_at",{ascending:false});
+ const {data,error}=await db.from("films")
+  .select("*").order("created_at",{ascending:false});
 
  if(error){
-  $("films").textContent="상영작을 불러오지 못했어. Supabase 설정을 확인해 줘.";
+  $("films").textContent="상영작을 불러오지 못했어.";
   console.error(error);
   return;
  }
@@ -291,15 +551,11 @@ async function load(){
  render();
 }
 
-// 상영작 표시
 function render(){
- $("films").innerHTML=films.length
- ?films.map(f=>`
+ $("films").innerHTML=films.length?films.map(f=>`
   <article class="card">
    <div class="poster">
-    ${f.poster_url
-     ?`<img src="${esc(f.poster_url)}" alt="${esc(f.title)} 포스터" onerror="this.style.display='none'">`
-     :"🎬"}
+    ${f.poster_url?`<img src="${esc(f.poster_url)}" alt="${esc(f.title)}">`:"🎬"}
    </div>
    <div class="info">
     <b>${esc(f.title)}</b>
@@ -310,115 +566,19 @@ function render(){
     </div>
    </div>
   </article>
- `).join("")
- :'<p class="muted">아직 등록된 상영작이 없어.</p>';
+ `).join(""):'<p class="muted">아직 등록된 상영작이 없어.</p>';
 
- document.querySelectorAll("[data-watch]")
-  .forEach(b=>b.onclick=()=>watch(b.dataset.watch));
-
- document.querySelectorAll("[data-del]")
-  .forEach(b=>b.onclick=()=>del(b.dataset.del));
-}
-
-// 영화관 화면 안에서 바로 재생
-function watch(id){
- const f=films.find(x=>x.id===id);
- if(!f)return;
-
- // 기존 영상 정리
- $("frame").innerHTML="";
- $("playing").textContent=f.title;
- $("cinemaPlayer").classList.add("active");
-
- if(f.type==="youtube"){
-  const videoId=yt(f.video_url);
-
-  if(!videoId){
-   alert("유튜브 링크를 확인해 줘.");
-   $("cinemaPlayer").classList.remove("active");
-   return;
-  }
-
-  const iframe=document.createElement("iframe");
-
-  iframe.src=
-   "https://www.youtube-nocookie.com/embed/"+
-   encodeURIComponent(videoId)+
-   "?autoplay=1&rel=0&modestbranding=1";
-
-  iframe.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";
-  iframe.allowFullscreen=true;
-  iframe.title=f.title;
-
-  $("frame").append(iframe);
-
-  $("playerNote").textContent=
-   "유튜브 영상이 영화관 화면에서 재생돼. 영상에 따라 외부 재생이 제한될 수 있어.";
-
-  $("cinemaPlayer").scrollIntoView({
-   behavior:"smooth",
-   block:"start"
-  });
-
- }else{
-  $("cinemaPlayer").classList.remove("active");
-  $("playerNote").textContent="위버스 영상은 위버스 페이지에서 재생돼.";
-  window.open(f.video_url,"_blank","noopener");
- }
-}
-
-// 상영 종료
-$("closePlayer").onclick=()=>{
- $("frame").innerHTML="";
- $("cinemaPlayer").classList.remove("active");
-};
-
-// 좌석 표시
-function draw(){
- const all=Object.values(presence).flat();
- const occupied={};
-
- all.forEach(p=>{
-  if(p.seat)occupied[p.seat]=p;
+ document.querySelectorAll("[data-watch]").forEach(b=>{
+  b.onclick=()=>watch(b.dataset.watch);
  });
-
- $("count").textContent=all.length;
- $("seats").innerHTML="";
-
- for(let n=1;n<=132;n++){
-  const b=document.createElement("button");
-  b.className="seat";
-  b.textContent=n;
-
-  if(occupied[n]){
-   b.classList.add(
-    occupied[n].sid===sid?"mine":"taken"
-   );
-  }
-
-  b.onclick=()=>{
-   const name=$("guest").value.trim();
-
-   if(!name){
-    alert("관람객 이름을 입력해 줘.");
-    return;
-   }
-
-   if(occupied[n]&&occupied[n].sid!==sid){
-    alert("이미 선택된 자리야.");
-    return;
-   }
-
-   seat=seat===n?null:n;
-   track();
-  };
-
-  $("seats").append(b);
- }
-
- $("myseat").textContent=
-  seat?`내 자리: ${seat}번`:"선택한 좌석 없음";
+ document.querySelectorAll("[data-del]").forEach(b=>{
+  b.onclick=()=>del(b.dataset.del);
+ });
 }
+
+// --------------------
+// 좌석 및 실시간
+// --------------------
 
 async function track(){
  if(channel){
@@ -428,7 +588,7 @@ async function track(){
    seat
   });
  }
- draw();
+ updateSeatVisual();
 }
 
 $("guest").onchange=()=>{
@@ -441,58 +601,44 @@ $("stand").onclick=()=>{
  track();
 };
 
-// 하트 보내기
 $("heart").onclick=()=>{
  if(!channel)return;
-
- channel.send({
-  type:"broadcast",
-  event:"heart"
- });
-
+ channel.send({type:"broadcast",event:"heart"});
  heartCount++;
  $("hearts").textContent=heartCount;
 };
 
-// 관리자 권한 확인
+// --------------------
+// 관리자
+// --------------------
+
 async function checkAdmin(){
  const {data}=await db.auth.getSession();
-
  if(!data.session){
   admin=false;
  }else{
   const r=await db.rpc("is_nyajju_admin");
   admin=!!r.data&&!r.error;
  }
-
  $("admin").style.display=admin?"block":"none";
  render();
 }
 
-$("loginOpen").onclick=()=>{
- $("login").style.display="flex";
-};
-
-$("loginClose").onclick=()=>{
- $("login").style.display="none";
-};
+$("loginOpen").onclick=()=>{$("login").style.display="flex"};
+$("loginClose").onclick=()=>{$("login").style.display="none"};
 
 $("loginform").onsubmit=async e=>{
  e.preventDefault();
-
  const r=await db.auth.signInWithPassword({
   email:$("email").value,
   password:$("password").value
  });
-
  if(r.error){
   alert("로그인 정보를 확인해 줘.");
   return;
  }
-
  $("login").style.display="none";
  await checkAdmin();
-
  alert(admin?"관리자 로그인 성공":"관리자 권한이 없는 계정이야.");
 };
 
@@ -501,10 +647,8 @@ $("logout").onclick=async()=>{
  await checkAdmin();
 };
 
-// 상영작 등록
 $("add").onsubmit=async e=>{
  e.preventDefault();
-
  if(!admin)return;
 
  const url=$("url").value.trim();
@@ -515,7 +659,7 @@ $("add").onsubmit=async e=>{
   return;
  }
 
- const r=await db.from("films").insert({
+ const {error}=await db.from("films").insert({
   title:$("title").value.trim(),
   type,
   video_url:url,
@@ -523,33 +667,32 @@ $("add").onsubmit=async e=>{
   description:$("desc").value.trim()
  });
 
- if(r.error){
-  alert("등록 실패. 관리자 권한과 SQL 설정을 확인해 줘.");
-  console.error(r.error);
+ if(error){
+  alert("등록 실패. 관리자 권한을 확인해 줘.");
+  console.error(error);
   return;
  }
 
  e.target.reset();
  await load();
- alert("상영작을 등록했어!");
+ alert("상영작 등록 완료!");
 };
 
-// 상영작 삭제
 async function del(id){
- if(!confirm("이 상영작을 삭제할까?"))return;
-
- const r=await db.from("films").delete().eq("id",id);
-
- if(r.error){
+ if(!confirm("삭제할까?"))return;
+ const {error}=await db.from("films").delete().eq("id",id);
+ if(error){
   alert("삭제 실패");
-  console.error(r.error);
+  console.error(error);
   return;
  }
-
  await load();
 }
 
-// 실시간 연결
+// --------------------
+// 시작
+// --------------------
+
 (async()=>{
  await load();
  await checkAdmin();
@@ -561,7 +704,8 @@ async function del(id){
  channel
   .on("presence",{event:"sync"},()=>{
    presence=channel.presenceState();
-   draw();
+   $("count").textContent=Object.values(presence).flat().length;
+   updateSeatVisual();
   })
   .on("broadcast",{event:"heart"},()=>{
    heartCount++;
@@ -583,7 +727,6 @@ async function del(id){
    table:"films"
   },load)
   .subscribe();
-
 })();
 </script>
 </body>
