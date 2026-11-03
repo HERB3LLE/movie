@@ -1,0 +1,531 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>냐쭙 시네마</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#100e18;color:#f8f3fb;
+ font-family:system-ui,-apple-system,sans-serif;
+}
+header,main{max-width:1100px;margin:auto;padding:22px}
+header{display:flex;justify-content:space-between;align-items:center}
+h1{margin:0;color:#f3a6cb}
+button{
+ border:0;border-radius:10px;padding:11px 15px;
+ background:#f3a6cb;color:#241321;font-weight:bold;cursor:pointer
+}
+button.alt{background:#302a3d;color:white}
+input,textarea,select{
+ background:#171421;color:white;border:1px solid #494057;
+ border-radius:9px;padding:11px;width:100%
+}
+.hero,.panel,.card{
+ background:#1b1825;border:1px solid #393246;
+ border-radius:18px;padding:18px;margin:15px 0
+}
+.hero{background:linear-gradient(120deg,#3b2944,#211b2d)}
+.muted{color:#aaa1b5;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.card{padding:0;overflow:hidden}
+.poster{
+ aspect-ratio:3/4;background:#33283d;
+ display:grid;place-items:center;font-size:45px
+}
+.poster img{width:100%;height:100%;object-fit:cover}
+.info{padding:13px}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.field{flex:1;min-width:180px;margin:9px 0}
+.field label{display:block;color:#aaa1b5;font-size:12px;margin-bottom:6px}
+.seatmap{display:grid;grid-template-columns:repeat(12,1fr);gap:5px}
+.seat{padding:7px 0;background:#393247;color:white;font-size:11px}
+.seat.taken{background:#76536d}
+.seat.mine{background:#f3a6cb;color:#211321}
+.screen{
+ height:5px;margin:28px 8%;background:#f0c8e0;
+ box-shadow:0 10px 30px #d99bc455;border-radius:50%
+}
+#admin{display:none}
+#modal{
+ display:none;position:fixed;inset:0;background:#000d;
+ align-items:center;justify-content:center;padding:15px
+}
+#modal.open{display:flex}
+.box{width:min(850px,100%);background:#191522;padding:16px;border-radius:18px}
+.player{aspect-ratio:16/9;background:#050505}
+.player iframe{width:100%;height:100%;border:0}
+.pill{border:1px solid #54475e;border-radius:30px;padding:8px 12px;font-size:13px}
+footer{text-align:center;color:#777;padding:25px}
+@media(max-width:600px){
+ header,main{padding:15px}
+ .seatmap{gap:3px}
+ .seat{font-size:9px;padding:6px 0}
+}
+</style>
+</head>
+<body>
+
+<header>
+ <div>
+  <h1>🍿 냐쭙 시네마</h1>
+  <span class="muted">우리끼리 모이는 작은 영화관</span>
+ </div>
+ <div class="row">
+  <span class="pill" id="status">연결 중</span>
+  <button class="alt" id="loginOpen">관리자</button>
+ </div>
+</header>
+
+<main>
+ <section class="hero">
+  <h2>오늘은 뭐 볼까?</h2>
+  <div class="row">
+   <span class="pill">👥 접속 <b id="count">0</b>명</span>
+   <span class="pill">💗 <b id="hearts">0</b></span>
+  </div>
+ </section>
+
+ <h2>상영작</h2>
+ <section id="films" class="grid"></section>
+
+ <section class="panel">
+  <h2>상영관 좌석</h2>
+  <p class="muted">이름을 입력하고 좌석을 선택해 줘.</p>
+
+  <div class="row">
+   <div class="field">
+    <label>관람객 이름</label>
+    <input id="guest" maxlength="16" placeholder="닉네임">
+   </div>
+   <button class="alt" id="stand">일어서기</button>
+   <button id="heart">💗 하트 보내기</button>
+  </div>
+
+  <div class="screen"></div>
+  <div id="seats" class="seatmap"></div>
+  <p id="myseat" class="muted">선택한 좌석 없음</p>
+ </section>
+
+ <section id="admin" class="panel">
+  <div class="row">
+   <h2 style="flex:1">관리자 · 상영작 관리</h2>
+   <button class="alt" id="logout">로그아웃</button>
+  </div>
+
+  <form id="add">
+   <div class="row">
+    <div class="field">
+     <label>제목</label>
+     <input id="title" required maxlength="80">
+    </div>
+    <div class="field">
+     <label>종류</label>
+     <select id="type">
+      <option value="youtube">유튜브</option>
+      <option value="weverse">위버스</option>
+     </select>
+    </div>
+   </div>
+
+   <div class="field">
+    <label>영상 링크</label>
+    <input id="url" type="url" required>
+   </div>
+
+   <div class="row">
+    <div class="field">
+     <label>포스터 이미지 링크</label>
+     <input id="poster" type="url">
+    </div>
+    <div class="field">
+     <label>설명</label>
+     <input id="desc">
+    </div>
+   </div>
+
+   <button>상영작 등록</button>
+  </form>
+ </section>
+</main>
+
+<footer>냐쭙 시네마 🍿</footer>
+
+<div id="modal">
+ <div class="box">
+  <div class="row">
+   <h3 id="playing" style="flex:1"></h3>
+   <button class="alt" id="close">닫기</button>
+  </div>
+  <div id="frame" class="player"></div>
+  <p id="note" class="muted"></p>
+ </div>
+</div>
+
+<div id="login" style="
+ display:none;position:fixed;inset:0;background:#000d;
+ align-items:center;justify-content:center;padding:15px">
+ <form id="loginform" class="box">
+  <h2>관리자 로그인</h2>
+  <div class="field">
+   <label>이메일</label>
+   <input id="email" type="email" required>
+  </div>
+  <div class="field">
+   <label>비밀번호</label>
+   <input id="password" type="password" required>
+  </div>
+  <div class="row">
+   <button>로그인</button>
+   <button type="button" class="alt" id="loginClose">닫기</button>
+  </div>
+ </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// Supabase 연결
+const SUPABASE_URL="https://jaedeuxeiqpphpjaxgiv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_SSHP4r2Ge7BACfUyfx700Q_Z5OvbZIa";
+
+const db=supabase.createClient(
+ SUPABASE_URL,
+ SUPABASE_PUBLISHABLE_KEY
+);
+
+const $=id=>document.getElementById(id);
+
+let films=[];
+let admin=false;
+let seat=null;
+let presence={};
+let channel;
+let heartCount=0;
+
+let sid=localStorage.nyajjuSid||
+ (localStorage.nyajjuSid=crypto.randomUUID());
+
+$("guest").value=localStorage.nyajjuName||"";
+
+function yt(url){
+ try{
+  const u=new URL(url);
+  if(u.hostname.includes("youtu.be"))
+   return u.pathname.slice(1);
+  if(u.hostname.includes("youtube.com"))
+   return u.searchParams.get("v");
+ }catch(e){}
+ return null;
+}
+
+function esc(s){
+ return String(s||"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+ }[c]));
+}
+
+// 상영작 불러오기
+async function load(){
+ const {data,error}=await db
+  .from("films")
+  .select("*")
+  .order("created_at",{ascending:false});
+
+ if(error){
+  $("films").textContent="Supabase SQL 설정을 먼저 완료해 줘.";
+  console.error(error);
+  return;
+ }
+
+ films=data||[];
+ render();
+}
+
+// 상영작 표시
+function render(){
+ $("films").innerHTML=films.length
+ ?films.map(f=>`
+  <article class="card">
+   <div class="poster">
+    ${f.poster_url
+     ?`<img src="${esc(f.poster_url)}">`
+     :"🎬"}
+   </div>
+   <div class="info">
+    <b>${esc(f.title)}</b>
+    <p class="muted">${esc(f.description)}</p>
+    <div class="row">
+     <button data-watch="${f.id}">시청하기</button>
+     ${admin?`<button class="alt" data-del="${f.id}">삭제</button>`:""}
+    </div>
+   </div>
+  </article>
+ `).join("")
+ :'<p class="muted">아직 등록된 상영작이 없어.</p>';
+
+ document.querySelectorAll("[data-watch]")
+  .forEach(b=>b.onclick=()=>watch(b.dataset.watch));
+
+ document.querySelectorAll("[data-del]")
+  .forEach(b=>b.onclick=()=>del(b.dataset.del));
+}
+
+// 영상 재생
+function watch(id){
+ const f=films.find(x=>x.id===id);
+ if(!f)return;
+
+ $("playing").textContent=f.title;
+ $("frame").innerHTML="";
+
+ if(f.type==="youtube"){
+  const videoId=yt(f.video_url);
+
+  if(!videoId){
+   alert("유튜브 링크를 확인해 줘.");
+   return;
+  }
+
+  const iframe=document.createElement("iframe");
+  iframe.src=
+   "https://www.youtube-nocookie.com/embed/"+
+   encodeURIComponent(videoId)+
+   "?rel=0&modestbranding=1";
+
+  iframe.allow="autoplay; encrypted-media; picture-in-picture";
+  iframe.allowFullscreen=true;
+
+  $("frame").append(iframe);
+  $("note").textContent=
+   "외부 삽입이 허용된 영상만 재생돼. 유튜브 표시를 완전히 숨길 수는 없어.";
+
+  $("modal").classList.add("open");
+
+ }else{
+  $("note").textContent="위버스 페이지를 새 창에서 열게.";
+  window.open(f.video_url,"_blank","noopener");
+ }
+}
+
+$("close").onclick=()=>{
+ $("modal").classList.remove("open");
+ $("frame").innerHTML="";
+};
+
+// 좌석 표시
+function draw(){
+ const all=Object.values(presence).flat();
+ const occupied={};
+
+ all.forEach(p=>{
+  if(p.seat)occupied[p.seat]=p;
+ });
+
+ $("count").textContent=all.length;
+ $("seats").innerHTML="";
+
+ for(let n=1;n<=132;n++){
+  const b=document.createElement("button");
+  b.className="seat";
+  b.textContent=n;
+
+  if(occupied[n]){
+   b.classList.add(
+    occupied[n].sid===sid?"mine":"taken"
+   );
+  }
+
+  b.onclick=()=>{
+   const name=$("guest").value.trim();
+
+   if(!name){
+    alert("관람객 이름을 입력해 줘.");
+    return;
+   }
+
+   if(occupied[n]&&occupied[n].sid!==sid){
+    alert("이미 선택된 자리야.");
+    return;
+   }
+
+   seat=seat===n?null:n;
+   track();
+  };
+
+  $("seats").append(b);
+ }
+
+ $("myseat").textContent=
+  seat?`내 자리: ${seat}번`:"선택한 좌석 없음";
+}
+
+async function track(){
+ if(channel){
+  await channel.track({
+   sid,
+   name:$("guest").value.trim()||"관람객",
+   seat
+  });
+ }
+ draw();
+}
+
+$("guest").onchange=()=>{
+ localStorage.nyajjuName=$("guest").value;
+ track();
+};
+
+$("stand").onclick=()=>{
+ seat=null;
+ track();
+};
+
+// 하트
+$("heart").onclick=async()=>{
+ if(!channel)return;
+
+ channel.send({
+  type:"broadcast",
+  event:"heart"
+ });
+
+ heartCount++;
+ $("hearts").textContent=heartCount;
+};
+
+// 관리자 권한 확인
+async function checkAdmin(){
+ const {data}=await db.auth.getSession();
+
+ if(!data.session){
+  admin=false;
+ }else{
+  const r=await db.rpc("is_nyajju_admin");
+  admin=!!r.data&&!r.error;
+ }
+
+ $("admin").style.display=admin?"block":"none";
+ render();
+}
+
+$("loginOpen").onclick=()=>{
+ $("login").style.display="flex";
+};
+
+$("loginClose").onclick=()=>{
+ $("login").style.display="none";
+};
+
+$("loginform").onsubmit=async e=>{
+ e.preventDefault();
+
+ const r=await db.auth.signInWithPassword({
+  email:$("email").value,
+  password:$("password").value
+ });
+
+ if(r.error){
+  alert("로그인 정보를 확인해 줘.");
+  return;
+ }
+
+ $("login").style.display="none";
+ await checkAdmin();
+
+ alert(admin?"관리자 로그인 성공":"관리자 권한이 없는 계정이야.");
+};
+
+$("logout").onclick=async()=>{
+ await db.auth.signOut();
+ checkAdmin();
+};
+
+// 상영작 등록
+$("add").onsubmit=async e=>{
+ e.preventDefault();
+
+ if(!admin)return;
+
+ const url=$("url").value.trim();
+ const type=$("type").value;
+
+ if(type==="youtube"&&!yt(url)){
+  alert("유튜브 링크를 확인해 줘.");
+  return;
+ }
+
+ const r=await db.from("films").insert({
+  title:$("title").value.trim(),
+  type,
+  video_url:url,
+  poster_url:$("poster").value.trim()||null,
+  description:$("desc").value.trim()
+ });
+
+ if(r.error){
+  alert("등록 실패. SQL 설정과 관리자 권한을 확인해 줘.");
+  return;
+ }
+
+ e.target.reset();
+ load();
+};
+
+// 상영작 삭제
+async function del(id){
+ if(!confirm("삭제할까?"))return;
+
+ const r=await db.from("films").delete().eq("id",id);
+
+ if(r.error){
+  alert("삭제 실패");
+  return;
+ }
+
+ load();
+}
+
+// 실시간 연결
+(async()=>{
+ await load();
+ await checkAdmin();
+
+ channel=db.channel("nyajju-main",{
+  config:{presence:{key:sid}}
+ });
+
+ channel
+  .on("presence",{event:"sync"},()=>{
+   presence=channel.presenceState();
+   draw();
+  })
+  .on("broadcast",{event:"heart"},()=>{
+   heartCount++;
+   $("hearts").textContent=heartCount;
+  })
+  .subscribe(async status=>{
+   if(status==="SUBSCRIBED"){
+    $("status").textContent="실시간 연결됨";
+    track();
+   }
+  });
+
+ db.channel("film-changes")
+  .on("postgres_changes",{
+   event:"*",
+   schema:"public",
+   table:"films"
+  },load)
+  .subscribe();
+
+})();
+</script>
+</body>
+</html>
