@@ -33,7 +33,8 @@ input,textarea,select{
 .card{padding:0;overflow:hidden}
 .poster{
  aspect-ratio:3/4;background:#33283d;
- display:grid;place-items:center;font-size:45px
+ display:grid;place-items:center;font-size:45px;
+ overflow:hidden
 }
 .poster img{width:100%;height:100%;object-fit:cover}
 .info{padding:13px}
@@ -49,20 +50,54 @@ input,textarea,select{
  box-shadow:0 10px 30px #d99bc455;border-radius:50%
 }
 #admin{display:none}
-#modal{
+
+/* 영화관 재생 화면 */
+#cinemaPlayer{
+ display:none;
+ background:#08070c;
+ border:1px solid #51435c;
+ border-radius:18px;
+ padding:16px;
+ margin:20px 0;
+}
+#cinemaPlayer.active{display:block}
+.player{
+ width:100%;
+ aspect-ratio:16/9;
+ background:#000;
+ border-radius:12px;
+ overflow:hidden;
+}
+.player iframe{
+ width:100%;
+ height:100%;
+ border:0;
+}
+.playerTop{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ margin-bottom:14px;
+}
+.playerTop h2{
+ flex:1;
+ font-size:19px;
+ margin:0;
+}
+#playerNote{margin:12px 0 0}
+.pill{border:1px solid #54475e;border-radius:30px;padding:8px 12px;font-size:13px}
+footer{text-align:center;color:#777;padding:25px}
+#login{
  display:none;position:fixed;inset:0;background:#000d;
  align-items:center;justify-content:center;padding:15px
 }
-#modal.open{display:flex}
 .box{width:min(850px,100%);background:#191522;padding:16px;border-radius:18px}
-.player{aspect-ratio:16/9;background:#050505}
-.player iframe{width:100%;height:100%;border:0}
-.pill{border:1px solid #54475e;border-radius:30px;padding:8px 12px;font-size:13px}
-footer{text-align:center;color:#777;padding:25px}
+#login .box{width:min(450px,100%)}
 @media(max-width:600px){
  header,main{padding:15px}
  .seatmap{gap:3px}
  .seat{font-size:9px;padding:6px 0}
+ .playerTop h2{font-size:16px}
 }
 </style>
 </head>
@@ -86,6 +121,16 @@ footer{text-align:center;color:#777;padding:25px}
    <span class="pill">👥 접속 <b id="count">0</b>명</span>
    <span class="pill">💗 <b id="hearts">0</b></span>
   </div>
+ </section>
+
+ <!-- 영상이 재생되는 영화관 화면 -->
+ <section id="cinemaPlayer">
+  <div class="playerTop">
+   <h2 id="playing">상영 중</h2>
+   <button class="alt" id="closePlayer">상영 종료</button>
+  </div>
+  <div id="frame" class="player"></div>
+  <p id="playerNote" class="muted"></p>
  </section>
 
  <h2>상영작</h2>
@@ -153,20 +198,7 @@ footer{text-align:center;color:#777;padding:25px}
 
 <footer>냐쭙 시네마 🍿</footer>
 
-<div id="modal">
- <div class="box">
-  <div class="row">
-   <h3 id="playing" style="flex:1"></h3>
-   <button class="alt" id="close">닫기</button>
-  </div>
-  <div id="frame" class="player"></div>
-  <p id="note" class="muted"></p>
- </div>
-</div>
-
-<div id="login" style="
- display:none;position:fixed;inset:0;background:#000d;
- align-items:center;justify-content:center;padding:15px">
+<div id="login">
  <form id="loginform" class="box">
   <h2>관리자 로그인</h2>
   <div class="field">
@@ -210,13 +242,24 @@ let sid=localStorage.nyajjuSid||
 
 $("guest").value=localStorage.nyajjuName||"";
 
+// 유튜브 영상 ID 추출
 function yt(url){
  try{
   const u=new URL(url);
+
   if(u.hostname.includes("youtu.be"))
    return u.pathname.slice(1);
-  if(u.hostname.includes("youtube.com"))
-   return u.searchParams.get("v");
+
+  if(u.hostname.includes("youtube.com")){
+   if(u.pathname==="/watch")
+    return u.searchParams.get("v");
+
+   if(u.pathname.startsWith("/embed/"))
+    return u.pathname.split("/")[2];
+
+   if(u.pathname.startsWith("/shorts/"))
+    return u.pathname.split("/")[2];
+  }
  }catch(e){}
  return null;
 }
@@ -239,7 +282,7 @@ async function load(){
   .order("created_at",{ascending:false});
 
  if(error){
-  $("films").textContent="Supabase SQL 설정을 먼저 완료해 줘.";
+  $("films").textContent="상영작을 불러오지 못했어. Supabase 설정을 확인해 줘.";
   console.error(error);
   return;
  }
@@ -255,7 +298,7 @@ function render(){
   <article class="card">
    <div class="poster">
     ${f.poster_url
-     ?`<img src="${esc(f.poster_url)}">`
+     ?`<img src="${esc(f.poster_url)}" alt="${esc(f.title)} 포스터" onerror="this.style.display='none'">`
      :"🎬"}
    </div>
    <div class="info">
@@ -277,46 +320,57 @@ function render(){
   .forEach(b=>b.onclick=()=>del(b.dataset.del));
 }
 
-// 영상 재생
+// 영화관 화면 안에서 바로 재생
 function watch(id){
  const f=films.find(x=>x.id===id);
  if(!f)return;
 
- $("playing").textContent=f.title;
+ // 기존 영상 정리
  $("frame").innerHTML="";
+ $("playing").textContent=f.title;
+ $("cinemaPlayer").classList.add("active");
 
  if(f.type==="youtube"){
   const videoId=yt(f.video_url);
 
   if(!videoId){
    alert("유튜브 링크를 확인해 줘.");
+   $("cinemaPlayer").classList.remove("active");
    return;
   }
 
   const iframe=document.createElement("iframe");
+
   iframe.src=
    "https://www.youtube-nocookie.com/embed/"+
    encodeURIComponent(videoId)+
-   "?rel=0&modestbranding=1";
+   "?autoplay=1&rel=0&modestbranding=1";
 
-  iframe.allow="autoplay; encrypted-media; picture-in-picture";
+  iframe.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";
   iframe.allowFullscreen=true;
+  iframe.title=f.title;
 
   $("frame").append(iframe);
-  $("note").textContent=
-   "외부 삽입이 허용된 영상만 재생돼. 유튜브 표시를 완전히 숨길 수는 없어.";
 
-  $("modal").classList.add("open");
+  $("playerNote").textContent=
+   "유튜브 영상이 영화관 화면에서 재생돼. 영상에 따라 외부 재생이 제한될 수 있어.";
+
+  $("cinemaPlayer").scrollIntoView({
+   behavior:"smooth",
+   block:"start"
+  });
 
  }else{
-  $("note").textContent="위버스 페이지를 새 창에서 열게.";
+  $("cinemaPlayer").classList.remove("active");
+  $("playerNote").textContent="위버스 영상은 위버스 페이지에서 재생돼.";
   window.open(f.video_url,"_blank","noopener");
  }
 }
 
-$("close").onclick=()=>{
- $("modal").classList.remove("open");
+// 상영 종료
+$("closePlayer").onclick=()=>{
  $("frame").innerHTML="";
+ $("cinemaPlayer").classList.remove("active");
 };
 
 // 좌석 표시
@@ -387,8 +441,8 @@ $("stand").onclick=()=>{
  track();
 };
 
-// 하트
-$("heart").onclick=async()=>{
+// 하트 보내기
+$("heart").onclick=()=>{
  if(!channel)return;
 
  channel.send({
@@ -444,7 +498,7 @@ $("loginform").onsubmit=async e=>{
 
 $("logout").onclick=async()=>{
  await db.auth.signOut();
- checkAdmin();
+ await checkAdmin();
 };
 
 // 상영작 등록
@@ -470,26 +524,29 @@ $("add").onsubmit=async e=>{
  });
 
  if(r.error){
-  alert("등록 실패. SQL 설정과 관리자 권한을 확인해 줘.");
+  alert("등록 실패. 관리자 권한과 SQL 설정을 확인해 줘.");
+  console.error(r.error);
   return;
  }
 
  e.target.reset();
- load();
+ await load();
+ alert("상영작을 등록했어!");
 };
 
 // 상영작 삭제
 async function del(id){
- if(!confirm("삭제할까?"))return;
+ if(!confirm("이 상영작을 삭제할까?"))return;
 
  const r=await db.from("films").delete().eq("id",id);
 
  if(r.error){
   alert("삭제 실패");
+  console.error(r.error);
   return;
  }
 
- load();
+ await load();
 }
 
 // 실시간 연결
@@ -514,6 +571,8 @@ async function del(id){
    if(status==="SUBSCRIBED"){
     $("status").textContent="실시간 연결됨";
     track();
+   }else if(status==="CHANNEL_ERROR"){
+    $("status").textContent="연결 오류";
    }
   });
 
