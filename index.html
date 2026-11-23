@@ -5,6 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노유나</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+
 <style>
 * {
   box-sizing: border-box;
@@ -13,233 +16,84 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: #25221d;
+  background: #29251f;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  font-family: sans-serif;
 }
 
-.container {
+.notebook {
   position: relative;
   width: min(100vw, 928px);
   aspect-ratio: 928 / 1650;
   overflow: hidden;
-  background: #eee2ca;
-  box-shadow: 0 10px 45px #0008;
+  box-shadow: 0 8px 35px #0007;
 }
 
-.paper {
-  position: absolute;
-  inset: 0;
+.notebook img {
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  display: block;
 }
 
-canvas {
+.writing {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  left: 14%;
+  top: 16.2%;
+  white-space: nowrap;
+  font-family: 'Nanum Pen Script', cursive;
+  font-size: clamp(85px, 14vw, 145px);
+  font-weight: 400;
+  letter-spacing: 3px;
+  color: rgba(255, 220, 35, 0.76);
+  text-shadow:
+    0 0 1px rgba(255, 214, 0, 0.3);
+  width: 0;
+  overflow: hidden;
+  animation: write 3.2s ease-in-out forwards;
+}
+
+@keyframes write {
+  from {
+    width: 0;
+  }
+  to {
+    width: 90%;
+  }
 }
 
 button {
   position: fixed;
-  bottom: 24px;
+  bottom: 22px;
   left: 50%;
   transform: translateX(-50%);
-  border: 1px solid #ffffff55;
-  background: #302d28;
-  color: white;
-  padding: 12px 24px;
+  border: none;
   border-radius: 30px;
+  padding: 12px 23px;
+  background: #f3d84c;
+  color: #40391f;
   font-size: 14px;
-  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container" id="paper">
-  <img class="paper" src="IMG_1858.jpeg">
-  <canvas id="canvas" width="928" height="1650"></canvas>
+<div class="notebook">
+  <img src="IMG_1858.jpeg" alt="공책">
+  <div class="writing" id="writing">노유나</div>
 </div>
 
 <button onclick="replay()">다시 쓰기</button>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-// 글자 위치와 크기
-const startX = 155;
-const startY = 330;
-const charWidth = 105;
-const gap = 20;
-const scale = 0.95;
-
-// 손글씨처럼 자연스러운 획
-const letters = [
-  // 노
-  [
-    [[8,12],[8,35],[10,58],[12,83],[42,83]],
-    [[8,48],[35,48],[66,48],[92,48]],
-    [[49,48],[49,58],[49,69],[49,80]]
-  ],
-
-  // 유
-  [
-    [[48,10],[38,10],[27,16],[23,27],[25,38],
-     [34,45],[48,47],[62,43],[71,33],[72,22],
-     [65,13],[55,10],[48,10]],
-    [[12,55],[35,55],[59,55],[87,55]],
-    [[31,55],[31,65],[31,77]],
-    [[68,55],[68,65],[68,77]]
-  ],
-
-  // 나
-  [
-    [[13,10],[13,27],[13,45],[13,65],[13,83]],
-    [[13,46],[36,46],[60,46],[86,46]]
-  ]
-];
-
-// 획을 하나씩 그리기
-let strokes = [];
-let currentStroke = 0;
-let currentPoint = 0;
-let progress = 0;
-let animationId;
-let penX = 0;
-let penY = 0;
-
-function makeStrokes() {
-  strokes = [];
-
-  letters.forEach((letter, index) => {
-    letter.forEach(path => {
-      const points = path.map(([x,y]) => ({
-        x: startX + index * (charWidth + gap) + x * scale,
-        y: startY + y * scale
-      }));
-
-      strokes.push(points);
-    });
-  });
-}
-
-function drawBackground() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function drawStroke(points, amount) {
-  const total = points.length - 1;
-  const exact = amount * total;
-  const whole = Math.floor(exact);
-  const partial = exact - whole;
-
-  ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-
-  for (let i = 1; i <= whole && i < points.length; i++) {
-    ctx.lineTo(points[i].x, points[i].y);
-  }
-
-  if (whole < total) {
-    const a = points[whole];
-    const b = points[whole + 1];
-
-    ctx.lineTo(
-      a.x + (b.x - a.x) * partial,
-      a.y + (b.y - a.y) * partial
-    );
-  }
-
-  // 형광펜 질감
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.lineWidth = 19;
-  ctx.strokeStyle = "rgba(255, 226, 35, 0.58)";
-  ctx.stroke();
-
-  // 중심의 진한 잉크 느낌
-  ctx.lineWidth = 11;
-  ctx.strokeStyle = "rgba(255, 229, 65, 0.30)";
-  ctx.stroke();
-}
-
-function drawPen(x, y) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(-0.35);
-
-  // 형광펜 몸통
-  ctx.fillStyle = "#e5c94a";
-  ctx.fillRect(-5, -53, 11, 45);
-
-  ctx.fillStyle = "#b99c32";
-  ctx.fillRect(-5, -53, 11, 8);
-
-  // 펜 끝
-  ctx.fillStyle = "#f5dc6b";
-  ctx.beginPath();
-  ctx.moveTo(-5, -8);
-  ctx.lineTo(6, -8);
-  ctx.lineTo(1, 4);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.restore();
-}
-
-function animate() {
-  drawBackground();
-
-  for (let i = 0; i < currentStroke; i++) {
-    drawStroke(strokes[i], 1);
-  }
-
-  if (currentStroke < strokes.length) {
-    const path = strokes[currentStroke];
-    drawStroke(path, progress);
-
-    const total = path.length - 1;
-    const exact = progress * total;
-    const index = Math.min(Math.floor(exact), total - 1);
-    const t = exact - index;
-
-    const a = path[index];
-    const b = path[index + 1];
-
-    penX = a.x + (b.x - a.x) * t;
-    penY = a.y + (b.y - a.y) * t;
-
-    drawPen(penX, penY);
-
-    progress += 0.018;
-
-    if (progress >= 1) {
-      progress = 0;
-      currentStroke++;
-    }
-
-    animationId = requestAnimationFrame(animate);
-  }
-}
-
 function replay() {
-  cancelAnimationFrame(animationId);
-  currentStroke = 0;
-  progress = 0;
-  makeStrokes();
-  animate();
+  const writing = document.getElementById("writing");
+  writing.style.animation = "none";
+  void writing.offsetWidth;
+  writing.style.animation = "write 3.2s ease-in-out forwards";
 }
-
-makeStrokes();
-animate();
 </script>
 
 </body>
