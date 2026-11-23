@@ -5,213 +5,57 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노유나</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
-
 <style>
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
   min-height: 100vh;
+  background: #25221d;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(ellipse at center, #55534c, #24231f);
+  align-items: center;
   overflow: hidden;
   font-family: sans-serif;
 }
 
-.scene {
-  width: min(92vw, 580px);
-  perspective: 1000px;
-}
-
-.notebook {
+.container {
   position: relative;
-  width: 100%;
-  min-height: 360px;
-  padding: 70px 28px 65px 72px;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 34px,
-      rgba(105,155,194,.24) 35px,
-      transparent 36px
-    ),
-    linear-gradient(110deg, #f5f0df, #fffdf2 45%, #f1ead8);
-  border-radius: 3px 9px 9px 3px;
-  box-shadow:
-    0 24px 45px rgba(0,0,0,.4),
-    inset 5px 0 10px rgba(0,0,0,.12),
-    inset -3px 0 5px rgba(0,0,0,.06);
-  transform: rotate(-1deg);
+  width: min(100vw, 928px);
+  aspect-ratio: 928 / 1650;
   overflow: hidden;
+  background: #eee2ca;
+  box-shadow: 0 10px 45px #0008;
 }
 
-/* 종이 질감 */
-.notebook::before {
-  content: "";
+.paper {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  opacity: .19;
-  background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
-}
-
-/* 세로 여백선 */
-.margin-line {
-  position: absolute;
-  left: 55px;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(198,105,91,.45);
-}
-
-/* 공책 스프링 */
-.spiral {
-  position: absolute;
-  left: 13px;
-  top: 0;
-  bottom: 0;
-  width: 28px;
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 27px,
-      #777 28px,
-      #dedede 30px,
-      #777 32px,
-      transparent 34px
-    );
-  z-index: 3;
-}
-
-.holes {
-  position: absolute;
-  left: 43px;
-  top: 0;
-  bottom: 0;
-  width: 12px;
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 27px,
-      #b7ae9b 28px,
-      #b7ae9b 35px,
-      transparent 36px
-    );
-  opacity: .7;
-}
-
-/* 글씨 */
-.writing-area {
-  position: relative;
-  margin-top: 70px;
   width: 100%;
-  height: 90px;
-  display: flex;
-  align-items: center;
+  height: 100%;
+  object-fit: fill;
 }
 
-.highlight {
+canvas {
   position: absolute;
-  left: -4px;
-  top: 15px;
-  height: 47px;
-  width: 0;
-  background: rgba(255, 225, 35, .67);
-  border-radius: 5px 2px 4px 3px;
-  transform: rotate(-1.2deg);
-  filter: blur(.5px);
-  transition: width 2.1s ease;
-}
-
-.highlight::after {
-  content: "";
-  position: absolute;
-  inset: 3px 0;
-  background: rgba(255, 244, 75, .23);
-  transform: rotate(.5deg);
-}
-
-.word {
-  position: relative;
-  z-index: 2;
-  font-family: 'Nanum Pen Script', cursive;
-  font-size: clamp(58px, 13vw, 83px);
-  color: #26251f;
-  letter-spacing: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  width: 0;
-  line-height: 1.3;
-  text-shadow: .3px .3px .3px rgba(0,0,0,.25);
-}
-
-.pen {
-  position: absolute;
-  z-index: 5;
-  top: 14px;
-  left: 0;
-  font-size: 27px;
-  opacity: 0;
-  transform: rotate(-35deg);
-  transition: left 2.1s linear;
-}
-
-.notebook.playing .highlight {
-  width: 235px;
-}
-
-.notebook.playing .word {
-  animation: writing 2.4s steps(4, end) forwards;
-  animation-delay: 1.5s;
-}
-
-.notebook.playing .pen {
-  opacity: 1;
-  animation: penMove 2.4s linear forwards;
-  animation-delay: 1.5s;
-}
-
-@keyframes writing {
-  to { width: 245px; }
-}
-
-@keyframes penMove {
-  from { left: 0; }
-  to { left: 235px; }
-}
-
-.corner {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 35px;
-  height: 35px;
-  background: linear-gradient(135deg, #e8dfcb 50%, #c9bea9 51%);
-  box-shadow: -2px -2px 4px rgba(0,0,0,.08);
-}
-
-.controls {
-  margin-top: 34px;
-  text-align: center;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 button {
-  border: 1px solid rgba(255,255,255,.25);
-  border-radius: 30px;
-  background: rgba(30,30,30,.65);
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid #ffffff55;
+  background: #302d28;
   color: white;
-  padding: 11px 25px;
-  font-size: 13px;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 14px;
   cursor: pointer;
 }
 </style>
@@ -219,39 +63,183 @@ button {
 
 <body>
 
-<div class="scene">
-  <div class="notebook" id="notebook">
-    <div class="spiral"></div>
-    <div class="holes"></div>
-    <div class="margin-line"></div>
-
-    <div class="writing-area">
-      <div class="highlight"></div>
-      <div class="word">노유나</div>
-      <div class="pen">✎</div>
-    </div>
-
-    <div class="corner"></div>
-  </div>
-
-  <div class="controls">
-    <button onclick="replay()">다시 쓰기</button>
-  </div>
+<div class="container" id="paper">
+  <img class="paper" src="IMG_1858.jpeg">
+  <canvas id="canvas" width="928" height="1650"></canvas>
 </div>
 
+<button onclick="replay()">다시 쓰기</button>
+
 <script>
-const notebook = document.getElementById('notebook');
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-function replay() {
-  notebook.classList.remove('playing');
-  void notebook.offsetWidth;
+// 글자 위치와 크기
+const startX = 155;
+const startY = 330;
+const charWidth = 105;
+const gap = 20;
+const scale = 0.95;
 
-  setTimeout(() => {
-    notebook.classList.add('playing');
-  }, 100);
+// 손글씨처럼 자연스러운 획
+const letters = [
+  // 노
+  [
+    [[8,12],[8,35],[10,58],[12,83],[42,83]],
+    [[8,48],[35,48],[66,48],[92,48]],
+    [[49,48],[49,58],[49,69],[49,80]]
+  ],
+
+  // 유
+  [
+    [[48,10],[38,10],[27,16],[23,27],[25,38],
+     [34,45],[48,47],[62,43],[71,33],[72,22],
+     [65,13],[55,10],[48,10]],
+    [[12,55],[35,55],[59,55],[87,55]],
+    [[31,55],[31,65],[31,77]],
+    [[68,55],[68,65],[68,77]]
+  ],
+
+  // 나
+  [
+    [[13,10],[13,27],[13,45],[13,65],[13,83]],
+    [[13,46],[36,46],[60,46],[86,46]]
+  ]
+];
+
+// 획을 하나씩 그리기
+let strokes = [];
+let currentStroke = 0;
+let currentPoint = 0;
+let progress = 0;
+let animationId;
+let penX = 0;
+let penY = 0;
+
+function makeStrokes() {
+  strokes = [];
+
+  letters.forEach((letter, index) => {
+    letter.forEach(path => {
+      const points = path.map(([x,y]) => ({
+        x: startX + index * (charWidth + gap) + x * scale,
+        y: startY + y * scale
+      }));
+
+      strokes.push(points);
+    });
+  });
 }
 
-window.onload = replay;
+function drawBackground() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawStroke(points, amount) {
+  const total = points.length - 1;
+  const exact = amount * total;
+  const whole = Math.floor(exact);
+  const partial = exact - whole;
+
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+
+  for (let i = 1; i <= whole && i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
+
+  if (whole < total) {
+    const a = points[whole];
+    const b = points[whole + 1];
+
+    ctx.lineTo(
+      a.x + (b.x - a.x) * partial,
+      a.y + (b.y - a.y) * partial
+    );
+  }
+
+  // 형광펜 질감
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 19;
+  ctx.strokeStyle = "rgba(255, 226, 35, 0.58)";
+  ctx.stroke();
+
+  // 중심의 진한 잉크 느낌
+  ctx.lineWidth = 11;
+  ctx.strokeStyle = "rgba(255, 229, 65, 0.30)";
+  ctx.stroke();
+}
+
+function drawPen(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(-0.35);
+
+  // 형광펜 몸통
+  ctx.fillStyle = "#e5c94a";
+  ctx.fillRect(-5, -53, 11, 45);
+
+  ctx.fillStyle = "#b99c32";
+  ctx.fillRect(-5, -53, 11, 8);
+
+  // 펜 끝
+  ctx.fillStyle = "#f5dc6b";
+  ctx.beginPath();
+  ctx.moveTo(-5, -8);
+  ctx.lineTo(6, -8);
+  ctx.lineTo(1, 4);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function animate() {
+  drawBackground();
+
+  for (let i = 0; i < currentStroke; i++) {
+    drawStroke(strokes[i], 1);
+  }
+
+  if (currentStroke < strokes.length) {
+    const path = strokes[currentStroke];
+    drawStroke(path, progress);
+
+    const total = path.length - 1;
+    const exact = progress * total;
+    const index = Math.min(Math.floor(exact), total - 1);
+    const t = exact - index;
+
+    const a = path[index];
+    const b = path[index + 1];
+
+    penX = a.x + (b.x - a.x) * t;
+    penY = a.y + (b.y - a.y) * t;
+
+    drawPen(penX, penY);
+
+    progress += 0.018;
+
+    if (progress >= 1) {
+      progress = 0;
+      currentStroke++;
+    }
+
+    animationId = requestAnimationFrame(animate);
+  }
+}
+
+function replay() {
+  cancelAnimationFrame(animationId);
+  currentStroke = 0;
+  progress = 0;
+  makeStrokes();
+  animate();
+}
+
+makeStrokes();
+animate();
 </script>
 
 </body>
