@@ -3,827 +3,256 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>냐쭙 시네마</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노유나</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
-  }
-}
-</script>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#100b19;color:white;font-family:Arial,"Apple SD Gothic Neo",sans-serif;overflow:hidden}
-button,input,textarea,select{font:inherit}
-button{cursor:pointer}
-header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 17px;background:#191020;border-bottom:1px solid #493451;position:relative;z-index:10}
-.logo{font-size:20px;font-weight:900}
-.logo span{color:#e8a5dc}
-.small-btn{border:1px solid #694c73;background:#2b1d35;color:white;border-radius:20px;padding:8px 13px;font-size:12px}
-#game{height:calc(100dvh - 58px);position:relative;overflow:hidden;background:#08060d}
-#world{position:absolute;inset:0}
-#world canvas{width:100%;height:100%;display:block;touch-action:none}
-#screenVideo{position:absolute;display:none;z-index:2;border:0;background:#000;pointer-events:auto}
-#topInfo{position:absolute;z-index:4;top:12px;left:12px;display:flex;gap:7px;pointer-events:none}
-.pill{background:#160e20dd;border:1px solid #73517b;border-radius:20px;padding:8px 12px;font-size:11px}
-#help{position:absolute;right:12px;top:12px;z-index:4;background:#160e20bb;border-radius:10px;padding:8px 10px;font-size:10px;color:#eadbed;pointer-events:none}
-#hint{position:absolute;z-index:5;left:50%;top:48%;transform:translate(-50%,-50%);background:#24152eea;border:1px solid #bd80b5;border-radius:14px;padding:11px 16px;font-size:12px;white-space:nowrap;display:none}
-#sitBtn,#leaveBtn{position:absolute;z-index:6;left:50%;bottom:100px;transform:translateX(-50%);border:1px solid #d59acb;background:#a64e91;color:white;border-radius:25px;padding:12px 22px;font-weight:bold;display:none}
-#leaveBtn{background:#49324f}
-#mobileControls{position:absolute;z-index:6;bottom:13px;left:13px;right:13px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}
-.pad{display:grid;grid-template-columns:43px 43px 43px;grid-template-rows:43px 43px 43px;gap:4px;pointer-events:auto}
-.pad button,.look button{background:#24172ddd;color:white;border:1px solid #92659b;border-radius:11px;font-size:18px;touch-action:none}
-.pad button:nth-child(1){grid-column:2;grid-row:1}
-.pad button:nth-child(2){grid-column:1;grid-row:2}
-.pad button:nth-child(3){grid-column:2;grid-row:2}
-.pad button:nth-child(4){grid-column:3;grid-row:2}
-.pad button:nth-child(5){grid-column:2;grid-row:3}
-.look{display:flex;gap:5px;pointer-events:auto}
-.look button{width:43px;height:43px}
-#heartBtn{position:absolute;right:13px;bottom:70px;z-index:6;background:#48213ddd;color:#ffc3e8;border:1px solid #a45c91;border-radius:24px;padding:10px 14px}
-#heartCount{font-size:11px}
-#filmsPanel{display:none;position:absolute;z-index:12;inset:0;background:#100b19;overflow:auto;padding:18px}
-#filmsPanel.show{display:block}
-.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
-h2{font-size:18px;margin:0 0 8px}
-.sub{font-size:12px;color:#ac9bb5;line-height:1.6}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}
-.card{background:#1d1524;border:1px solid #493451;border-radius:12px;overflow:hidden}
-.poster{aspect-ratio:3/4;background:#2b2034;display:flex;align-items:center;justify-content:center;color:#9b85a3;font-size:12px;overflow:hidden}
-.poster img{width:100%;height:100%;object-fit:cover}
-.film-info{padding:10px}
-.film-title{font-size:13px;font-weight:bold;overflow-wrap:anywhere}
-.film-type{font-size:10px;color:#cb9ac7;margin-top:5px}
-.film-actions{display:flex;gap:5px;margin-top:10px}
-.film-actions button{flex:1;border:0;border-radius:7px;padding:8px 4px;background:#70436c;color:white;font-size:11px}
-.film-actions .del{background:#392b40}
-#loginBox,#adminBox{display:none;position:relative;z-index:15;margin:14px;background:#1b1422;border:1px solid #493451;padding:15px;border-radius:12px}
-#loginBox.show,#adminBox.show{display:block}
-.form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.form input,.form textarea,.form select,#loginBox input{width:100%;padding:11px;background:#100b19;color:white;border:1px solid #51405b;border-radius:8px;font-size:12px;min-width:0}
-.form textarea{grid-column:1/-1;min-height:60px}
-.form button{grid-column:1/-1;padding:11px;background:#a44d91;color:white;border:0;border-radius:8px}
-#notice{position:fixed;z-index:30;bottom:18px;left:50%;transform:translateX(-50%);background:#38243e;border:1px solid #805b88;border-radius:20px;padding:10px 15px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;max-width:90%;text-align:center}
-#notice.show{opacity:1}
-@media(max-width:600px){
- #help{top:53px}
- #game{height:calc(100dvh - 58px)}
- .form{grid-template-columns:1fr}
- .form textarea,.form button{grid-column:auto}
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at center, #55534c, #24231f);
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+.scene {
+  width: min(92vw, 580px);
+  perspective: 1000px;
+}
+
+.notebook {
+  position: relative;
+  width: 100%;
+  min-height: 360px;
+  padding: 70px 28px 65px 72px;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 34px,
+      rgba(105,155,194,.24) 35px,
+      transparent 36px
+    ),
+    linear-gradient(110deg, #f5f0df, #fffdf2 45%, #f1ead8);
+  border-radius: 3px 9px 9px 3px;
+  box-shadow:
+    0 24px 45px rgba(0,0,0,.4),
+    inset 5px 0 10px rgba(0,0,0,.12),
+    inset -3px 0 5px rgba(0,0,0,.06);
+  transform: rotate(-1deg);
+  overflow: hidden;
+}
+
+/* 종이 질감 */
+.notebook::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .19;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+}
+
+/* 세로 여백선 */
+.margin-line {
+  position: absolute;
+  left: 55px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(198,105,91,.45);
+}
+
+/* 공책 스프링 */
+.spiral {
+  position: absolute;
+  left: 13px;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 27px,
+      #777 28px,
+      #dedede 30px,
+      #777 32px,
+      transparent 34px
+    );
+  z-index: 3;
+}
+
+.holes {
+  position: absolute;
+  left: 43px;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 27px,
+      #b7ae9b 28px,
+      #b7ae9b 35px,
+      transparent 36px
+    );
+  opacity: .7;
+}
+
+/* 글씨 */
+.writing-area {
+  position: relative;
+  margin-top: 70px;
+  width: 100%;
+  height: 90px;
+  display: flex;
+  align-items: center;
+}
+
+.highlight {
+  position: absolute;
+  left: -4px;
+  top: 15px;
+  height: 47px;
+  width: 0;
+  background: rgba(255, 225, 35, .67);
+  border-radius: 5px 2px 4px 3px;
+  transform: rotate(-1.2deg);
+  filter: blur(.5px);
+  transition: width 2.1s ease;
+}
+
+.highlight::after {
+  content: "";
+  position: absolute;
+  inset: 3px 0;
+  background: rgba(255, 244, 75, .23);
+  transform: rotate(.5deg);
+}
+
+.word {
+  position: relative;
+  z-index: 2;
+  font-family: 'Nanum Pen Script', cursive;
+  font-size: clamp(58px, 13vw, 83px);
+  color: #26251f;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 0;
+  line-height: 1.3;
+  text-shadow: .3px .3px .3px rgba(0,0,0,.25);
+}
+
+.pen {
+  position: absolute;
+  z-index: 5;
+  top: 14px;
+  left: 0;
+  font-size: 27px;
+  opacity: 0;
+  transform: rotate(-35deg);
+  transition: left 2.1s linear;
+}
+
+.notebook.playing .highlight {
+  width: 235px;
+}
+
+.notebook.playing .word {
+  animation: writing 2.4s steps(4, end) forwards;
+  animation-delay: 1.5s;
+}
+
+.notebook.playing .pen {
+  opacity: 1;
+  animation: penMove 2.4s linear forwards;
+  animation-delay: 1.5s;
+}
+
+@keyframes writing {
+  to { width: 245px; }
+}
+
+@keyframes penMove {
+  from { left: 0; }
+  to { left: 235px; }
+}
+
+.corner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #e8dfcb 50%, #c9bea9 51%);
+  box-shadow: -2px -2px 4px rgba(0,0,0,.08);
+}
+
+.controls {
+  margin-top: 34px;
+  text-align: center;
+}
+
+button {
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 30px;
+  background: rgba(30,30,30,.65);
+  color: white;
+  padding: 11px 25px;
+  font-size: 13px;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
-<header>
-  <div class="logo">냐쭙 <span>시네마</span></div>
-  <button class="small-btn" id="adminToggle">관리자</button>
-</header>
 
-<div id="game">
-  <div id="world"></div>
-  <iframe id="screenVideo"
-    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-    allowfullscreen></iframe>
+<div class="scene">
+  <div class="notebook" id="notebook">
+    <div class="spiral"></div>
+    <div class="holes"></div>
+    <div class="margin-line"></div>
 
-  <div id="topInfo">
-    <div class="pill">🎬 냐쭙 시네마</div>
-    <div class="pill" id="audience">접속자 1명</div>
+    <div class="writing-area">
+      <div class="highlight"></div>
+      <div class="word">노유나</div>
+      <div class="pen">✎</div>
+    </div>
+
+    <div class="corner"></div>
   </div>
 
-  <div id="help">화면 드래그: 시점 회전 · WASD: 이동</div>
-  <div id="hint"></div>
-  <button id="sitBtn">이 좌석에 앉기</button>
-  <button id="leaveBtn">자리에서 일어나기</button>
-
-  <div id="mobileControls">
-    <div class="pad">
-      <button data-move="forward">↑</button>
-      <button data-move="left">←</button>
-      <button data-move="backward">↓</button>
-      <button data-move="right">→</button>
-      <button data-move="run">●</button>
-    </div>
-    <div class="look">
-      <button data-look="left">↶</button>
-      <button data-look="right">↷</button>
-    </div>
+  <div class="controls">
+    <button onclick="replay()">다시 쓰기</button>
   </div>
-
-  <button id="heartBtn">♥ 하트 <span id="heartCount">0</span></button>
 </div>
 
-<section id="filmsPanel">
-  <div class="panelHead">
-    <div>
-      <h2>상영 작품</h2>
-      <p class="sub">보고 싶은 작품을 선택하세요.</p>
-    </div>
-    <button class="small-btn" id="closeFilms">영화관으로 돌아가기</button>
-  </div>
-  <div id="filmList" class="grid"></div>
-</section>
+<script>
+const notebook = document.getElementById('notebook');
 
-<section id="loginBox">
-  <h2>관리자 로그인</h2>
-  <input id="adminEmail" type="email" placeholder="이메일">
-  <input id="adminPassword" type="password" placeholder="비밀번호" style="margin-top:8px">
-  <button class="small-btn" id="loginBtn" style="margin-top:10px">로그인</button>
-</section>
+function replay() {
+  notebook.classList.remove('playing');
+  void notebook.offsetWidth;
 
-<section id="adminBox">
-  <h2>관리자 페이지</h2>
-  <p class="sub">작품 등록 및 삭제</p>
-  <div class="form">
-    <input id="filmTitle" placeholder="작품 제목">
-    <select id="filmType">
-      <option>YouTube</option>
-      <option>Weverse</option>
-      <option>기타</option>
-    </select>
-    <input id="filmUrl" placeholder="영상 주소">
-    <input id="posterUrl" placeholder="포스터 이미지 주소 (선택)">
-    <textarea id="filmDescription" placeholder="작품 설명 (선택)"></textarea>
-    <button id="addFilm">작품 등록하기</button>
-  </div>
-  <button class="small-btn" id="logoutBtn" style="margin-top:12px">로그아웃</button>
-</section>
-
-<div id="notice"></div>
-
-<script type="module">
-import * as THREE from "three";
-
-const SUPABASE_URL="https://jaedeuxeiqpphpjaxgiv.supabase.co";
-const SUPABASE_KEY="sb_publishable_SSHP4r2Ge7BACfUyfx700Q_Z5OvbZIa";
-const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const $=id=>document.getElementById(id);
-const sessionId=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();
-
-let scene,camera,renderer;
-let player=new THREE.Vector3(0,1.7,12);
-let yaw=0,pitch=0,seated=false,currentSeat=null,nearbySeat=null;
-let seatObjects={},presenceChannel=null,audience={};
-let films=[],isAdmin=false,currentUser=null;
-let heartCount=0,keys={},touchMove={},lookPointer=null,lastX=0,lastY=0,lastFrame=0;
-let screenMesh;
-
-function notice(message){
-  const el=$("notice");
-  el.textContent=message;
-  el.classList.add("show");
-  clearTimeout(notice.timer);
-  notice.timer=setTimeout(()=>el.classList.remove("show"),2300);
+  setTimeout(() => {
+    notebook.classList.add('playing');
+  }, 100);
 }
 
-function mat(color,extra={}){
-  return new THREE.MeshStandardMaterial({color,roughness:.8,...extra});
-}
-
-function box(w,h,d,color,x,y,z,extra={}){
-  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color,extra));
-  mesh.position.set(x,y,z);
-  mesh.castShadow=true;
-  mesh.receiveShadow=true;
-  scene.add(mesh);
-  return mesh;
-}
-
-/* 영화관 공간 */
-function createWorld(){
-  const root=$("world");
-  scene=new THREE.Scene();
-  scene.background=new THREE.Color("#09070c");
-  scene.fog=new THREE.Fog("#09070c",23,48);
-
-  camera=new THREE.PerspectiveCamera(72,root.clientWidth/root.clientHeight,.1,100);
-  renderer=new THREE.WebGLRenderer({antialias:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  renderer.setSize(root.clientWidth,root.clientHeight);
-  renderer.shadowMap.enabled=true;
-  renderer.outputColorSpace=THREE.SRGBColorSpace;
-  root.appendChild(renderer.domElement);
-
-  scene.add(new THREE.HemisphereLight("#e3d6ed","#251522",1.8));
-
-  const front=new THREE.PointLight("#fff0e6",100,35);
-  front.position.set(0,9,-10);
-  scene.add(front);
-
-  for(const x of [-12,12]){
-    const light=new THREE.PointLight("#dca0cf",38,24);
-    light.position.set(x,5,0);
-    scene.add(light);
-  }
-
-  // 공간 크기
-  box(28,.4,34,"#242127",0,-.2,0);
-  box(28,.5,34,"#17141c",0,10.5,0);
-  box(.5,11,34,"#343039",-14,5,0);
-  box(.5,11,34,"#343039",14,5,0);
-  box(28,11,.5,"#201b25",0,5,16.5);
-  box(28,11,.5,"#211b25",0,5,-16.5);
-
-  // 무대와 대형 스크린
-  box(21,.7,2.2,"#17141b",0,.1,-13.8);
-  box(22,.35,.6,"#09080c",0,.65,-13.3);
-
-  // 스크린 프레임
-  box(21.5,.25,.35,"#b2a5ad",0,10.1,-15.8);
-  box(21.5,.25,.35,"#b2a5ad",0,.9,-15.8);
-  box(.25,9.2,.35,"#b2a5ad",-10.75,5.5,-15.8);
-  box(.25,9.2,.35,"#b2a5ad",10.75,5.5,-15.8);
-
-  screenMesh=new THREE.Mesh(
-    new THREE.PlaneGeometry(20.8,8.9),
-    new THREE.MeshBasicMaterial({color:"#e7e3e7"})
-  );
-  screenMesh.position.set(0,5.5,-15.58);
-  scene.add(screenMesh);
-
-  // 양옆 검은 커튼
-  for(const x of [-11.3,11.3]){
-    const curtain=box(1.1,9.4,.25,"#08070a",x,5.5,-15.3);
-    curtain.material.roughness=1;
-  }
-
-  // 무대 측면 스피커
-  for(const x of [-12.4,12.4]){
-    box(1.5,3,.9,"#09090c",x,5,-14.6);
-    box(1.1,1.1,.12,"#252329",x,5.4,-14.05);
-    box(.8,.8,.12,"#111116",x,4.2,-14.05);
-  }
-
-  // 천장 조명
-  for(let z=-14;z<=12;z+=3.5){
-    for(let x=-11;x<=11;x+=4.5){
-      const lamp=box(.17,.09,.35,"#f5e6df",x,10.15,z,{emissive:"#f6d6cf",emissiveIntensity:1.4});
-      const glow=new THREE.PointLight("#e8d1dc",5,5);
-      glow.position.set(x,9.7,z);
-      scene.add(glow);
-    }
-  }
-
-  // 벽면 세로 조명 패널
-  for(let z=-12;z<=13;z+=4){
-    for(const x of [-13.65,13.65]){
-      box(.1,5,.14,"#e4b5d5",x,5,z,{emissive:"#b66ca3",emissiveIntensity:1.1});
-      const glow=new THREE.PointLight("#e2a4d2",8,5);
-      glow.position.set(x+(x<0?.4:-.4),5,z);
-      scene.add(glow);
-    }
-  }
-
-  // 중앙 계단 통로
-  box(2.2,.04,23,"#39333b",0,.02,-.1);
-  for(let z=-9;z<=8;z+=1.5){
-    box(2.1,.035,.09,"#d88ac8",0,.06,z,{emissive:"#d75db9",emissiveIntensity:1.3});
-  }
-
-  createSeats();
-  camera.position.copy(player);
-  camera.rotation.order="YXZ";
-  updateCamera();
-
-  window.addEventListener("resize",resizeWorld);
-  renderer.domElement.addEventListener("pointerdown",lookStart);
-  renderer.domElement.addEventListener("pointermove",lookMove);
-  renderer.domElement.addEventListener("pointerup",lookEnd);
-  renderer.domElement.addEventListener("pointercancel",lookEnd);
-
-  animate();
-}
-
-/* 88개 좌석 */
-function createSeats(){
-  for(let row=0;row<8;row++){
-    for(let col=0;col<11;col++){
-      const group=new THREE.Group();
-      const id=`${String(row+1).padStart(2,"0")}-${String(col+1).padStart(2,"0")}`;
-
-      const red=mat("#701b2d");
-      const redBack=mat("#8c2439");
-      const dark=mat("#17151a");
-
-      const cushion=new THREE.Mesh(new THREE.BoxGeometry(.95,.22,.9),red);
-      cushion.position.set(0,.8,.05);
-      group.add(cushion);
-
-      const back=new THREE.Mesh(new THREE.BoxGeometry(.95,1.25,.22),redBack);
-      back.position.set(0,1.42,-.34);
-      group.add(back);
-
-      for(const x of [-.54,.54]){
-        const arm=new THREE.Mesh(new THREE.BoxGeometry(.13,.3,.95),dark);
-        arm.position.set(x,.86,.03);
-        group.add(arm);
-      }
-
-      for(const x of [-.37,.37]){
-        for(const z of [-.25,.3]){
-          const leg=new THREE.Mesh(new THREE.BoxGeometry(.11,.55,.11),dark);
-          leg.position.set(x,.35,z);
-          group.add(leg);
-        }
-      }
-
-      // 중앙 통로 간격
-      let x=(col-5)*1.65;
-      if(col>=5)x+=.85;
-
-      const z=7-row*1.9;
-      group.position.set(x,0,z);
-      group.userData.seatId=id;
-      scene.add(group);
-      seatObjects[id]=group;
-    }
-  }
-}
-
-/* 카메라와 화면 위치 */
-function updateCamera(){
-  camera.position.copy(player);
-  camera.rotation.order="YXZ";
-  camera.rotation.y=yaw;
-  camera.rotation.x=pitch;
-}
-
-/*
-  실제 스크린의 3D 좌표를 화면 좌표로 변환해
-  YouTube iframe을 스크린 위에 겹쳐 표시
-*/
-function updateScreenVideo(){
-  const iframe=$("screenVideo");
-  if(iframe.style.display==="none")return;
-
-  const width=renderer.domElement.clientWidth;
-  const height=renderer.domElement.clientHeight;
-
-  const corners=[
-    new THREE.Vector3(-10.4,9.95,-15.55),
-    new THREE.Vector3(10.4,9.95,-15.55),
-    new THREE.Vector3(10.4,1.05,-15.55),
-    new THREE.Vector3(-10.4,1.05,-15.55)
-  ];
-
-  const projected=corners.map(v=>{
-    const p=v.project(camera);
-    return {
-      x:(p.x+1)*width/2,
-      y:(1-p.y)*height/2,
-      z:p.z
-    };
-  });
-
-  if(projected.some(p=>p.z>1)){
-    iframe.style.display="none";
-    return;
-  }
-
-  const minX=Math.min(...projected.map(p=>p.x));
-  const maxX=Math.max(...projected.map(p=>p.x));
-  const minY=Math.min(...projected.map(p=>p.y));
-  const maxY=Math.max(...projected.map(p=>p.y));
-
-  iframe.style.left=`${Math.max(0,minX)}px`;
-  iframe.style.top=`${Math.max(0,minY)}px`;
-  iframe.style.width=`${Math.max(0,Math.min(width,maxX)-Math.max(0,minX))}px`;
-  iframe.style.height=`${Math.max(0,Math.min(height,maxY)-Math.max(0,minY))}px`;
-  iframe.style.display="block";
-}
-
-function resizeWorld(){
-  if(!renderer)return;
-  const root=$("world");
-  camera.aspect=root.clientWidth/root.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(root.clientWidth,root.clientHeight);
-}
-
-function animate(time=0){
-  requestAnimationFrame(animate);
-  const dt=Math.min((time-lastFrame)/1000,.05);
-  lastFrame=time;
-  if(!seated)movePlayer(dt);
-  updateNearbySeat();
-  updateCamera();
-  updateScreenVideo();
-  renderer.render(scene,camera);
-}
-
-/* 이동 */
-function movePlayer(dt){
-  let f=0,s=0;
-  if(keys.KeyW||keys.ArrowUp||touchMove.forward)f++;
-  if(keys.KeyS||keys.ArrowDown||touchMove.backward)f--;
-  if(keys.KeyA||touchMove.left)s--;
-  if(keys.KeyD||touchMove.right)s++;
-
-  if(!f&&!s)return;
-
-  const speed=touchMove.run?5:3.5;
-  const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
-  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
-  const move=forward.multiplyScalar(f).add(right.multiplyScalar(s)).normalize();
-
-  player.x=THREE.MathUtils.clamp(player.x+move.x*speed*dt,-12.5,12.5);
-  player.z=THREE.MathUtils.clamp(player.z+move.z*speed*dt,-15,15);
-}
-
-window.addEventListener("keydown",e=>{
-  keys[e.code]=true;
-  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code))e.preventDefault();
-});
-window.addEventListener("keyup",e=>keys[e.code]=false);
-
-function lookStart(e){
-  if(e.target.closest("button")||e.target=== $("screenVideo"))return;
-  lookPointer=e.pointerId;
-  lastX=e.clientX;
-  lastY=e.clientY;
-}
-function lookMove(e){
-  if(lookPointer!==e.pointerId)return;
-  const dx=e.clientX-lastX,dy=e.clientY-lastY;
-  lastX=e.clientX;lastY=e.clientY;
-  yaw-=dx*.004;
-  pitch=THREE.MathUtils.clamp(pitch-dy*.003,-.85,.85);
-}
-function lookEnd(){lookPointer=null;}
-
-document.querySelectorAll("[data-move]").forEach(btn=>{
-  const action=btn.dataset.move;
-  btn.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    touchMove[action]=true;
-    btn.setPointerCapture(e.pointerId);
-  });
-  ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>{
-    btn.addEventListener(ev,()=>touchMove[action]=false);
-  });
-});
-
-document.querySelectorAll("[data-look]").forEach(btn=>{
-  let timer;
-  const dir=btn.dataset.look==="left"?-1:1;
-  btn.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    timer=setInterval(()=>yaw+=dir*.05,30);
-  });
-  ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>{
-    btn.addEventListener(ev,()=>clearInterval(timer));
-  });
-});
-
-/* 좌석 가까이 가기 */
-function updateNearbySeat(){
-  if(seated){
-    $("sitBtn").style.display="none";
-    $("leaveBtn").style.display="block";
-    $("hint").style.display="none";
-    return;
-  }
-
-  $("leaveBtn").style.display="none";
-  let nearest=null,dist=1.8;
-
-  for(const [id,group] of Object.entries(seatObjects)){
-    const d=Math.hypot(player.x-group.position.x,player.z-group.position.z);
-    if(d<dist){dist=d;nearest=id;}
-  }
-
-  nearbySeat=nearest;
-
-  if(!nearest){
-    $("sitBtn").style.display="none";
-    $("hint").style.display="none";
-    return;
-  }
-
-  const owner=audience[nearest];
-  if(owner&&owner!==sessionId){
-    $("sitBtn").style.display="none";
-    $("hint").textContent="다른 관객이 앉아 있는 좌석이에요.";
-    $("hint").style.display="block";
-  }else{
-    $("sitBtn").style.display="block";
-    $("sitBtn").textContent=`이 좌석에 앉기 (${nearest})`;
-    $("hint").textContent="좌석에 가까이 왔어요.";
-    $("hint").style.display="block";
-  }
-}
-
-$("sitBtn").addEventListener("click",async()=>{
-  if(!nearbySeat)return;
-  if(audience[nearbySeat]&&audience[nearbySeat]!==sessionId){
-    notice("이미 다른 관객이 앉아 있어요.");
-    return;
-  }
-
-  currentSeat=nearbySeat;
-  const group=seatObjects[currentSeat];
-  player.set(group.position.x,1.25,group.position.z+1.45);
-  yaw=0;
-  pitch=0;
-  seated=true;
-  await publishPresence();
-  refreshSeats();
-  notice(`${currentSeat} 좌석에 앉았어요.`);
-});
-
-$("leaveBtn").addEventListener("click",async()=>{
-  if(!seated)return;
-  const group=seatObjects[currentSeat];
-  player.set(group.position.x,1.7,group.position.z+2.2);
-  currentSeat=null;
-  seated=false;
-  await publishPresence();
-  refreshSeats();
-  notice("자리에서 일어났어요.");
-});
-
-/* 좌석 색상 */
-function refreshSeats(){
-  for(const [id,group] of Object.entries(seatObjects)){
-    const owner=audience[id];
-    const c=owner===sessionId?"#bd7db4":owner?"#e7b5df":"#701b2d";
-    const b=owner===sessionId?"#e2a5d5":owner?"#b76ba8":"#8c2439";
-    group.children[0].material.color.set(c);
-    group.children[1].material.color.set(b);
-  }
-}
-
-/* 실시간 접속 및 좌석 공유 */
-async function startRealtime(){
-  presenceChannel=supabase.channel("nyajju-cinema-live",{
-    config:{presence:{key:sessionId},broadcast:{self:true}}
-  });
-
-  presenceChannel
-    .on("presence",{event:"sync"},rebuildAudience)
-    .on("broadcast",{event:"heart"},({payload})=>{
-      if(payload?.from!==sessionId){
-        heartCount++;
-        $("heartCount").textContent=heartCount;
-        notice("누군가 하트를 보냈어요 ♥");
-      }
-    })
-    .subscribe(async status=>{
-      if(status==="SUBSCRIBED")await publishPresence();
-    });
-}
-
-async function publishPresence(){
-  if(!presenceChannel)return;
-  try{await presenceChannel.track({seat:currentSeat});}
-  catch(e){console.error(e);}
-}
-
-function rebuildAudience(){
-  const state=presenceChannel.presenceState();
-  const next={};
-  let count=0;
-  for(const [key,entries] of Object.entries(state)){
-    if(!entries?.length)continue;
-    count++;
-    const entry=entries[entries.length-1];
-    if(entry.seat)next[entry.seat]=key;
-  }
-  audience=next;
-  $("audience").textContent=`접속자 ${count}명`;
-  refreshSeats();
-}
-
-/* 하트 */
-$("heartBtn").addEventListener("click",async()=>{
-  heartCount++;
-  $("heartCount").textContent=heartCount;
-  if(presenceChannel){
-    await presenceChannel.send({
-      type:"broadcast",event:"heart",payload:{from:sessionId}
-    });
-  }
-  notice("하트를 보냈어요 ♥");
-});
-
-/* 영상 목록 */
-async function loadFilms(){
-  const {data,error}=await supabase.from("films").select("*").order("created_at",{ascending:false});
-  if(error){
-    console.error(error);
-    $("filmList").innerHTML='<p class="sub">작품을 불러오지 못했어요.</p>';
-    return;
-  }
-  films=data||[];
-  renderFilms();
-}
-
-function renderFilms(){
-  const list=$("filmList");
-  list.innerHTML="";
-  if(!films.length){
-    list.innerHTML='<p class="sub">등록된 작품이 없어요.</p>';
-    return;
-  }
-
-  for(const film of films){
-    const card=document.createElement("article");
-    card.className="card";
-    const poster=document.createElement("div");
-    poster.className="poster";
-
-    if(film.poster_url){
-      const img=document.createElement("img");
-      img.src=film.poster_url;
-      img.alt=film.title||"포스터";
-      poster.appendChild(img);
-      img.onerror=()=>poster.textContent="NO IMAGE";
-    }else poster.textContent="NYAJJU CINEMA";
-
-    const info=document.createElement("div");
-    info.className="film-info";
-    const title=document.createElement("div");
-    title.className="film-title";
-    title.textContent=film.title||"제목 없음";
-    const type=document.createElement("div");
-    type.className="film-type";
-    type.textContent=film.type||"기타";
-
-    const actions=document.createElement("div");
-    actions.className="film-actions";
-    const play=document.createElement("button");
-    play.textContent="스크린에서 재생";
-    play.onclick=()=>playFilm(film);
-    actions.appendChild(play);
-
-    if(isAdmin){
-      const del=document.createElement("button");
-      del.className="del";
-      del.textContent="삭제";
-      del.onclick=()=>deleteFilm(film.id);
-      actions.appendChild(del);
-    }
-
-    info.append(title,type,actions);
-    card.append(poster,info);
-    list.appendChild(card);
-  }
-}
-
-function getYoutubeId(url){
-  try{
-    const u=new URL(url);
-    if(u.hostname.includes("youtu.be"))return u.pathname.slice(1);
-    if(u.searchParams.get("v"))return u.searchParams.get("v");
-    const parts=u.pathname.split("/");
-    const i=parts.findIndex(x=>x==="embed"||x==="shorts");
-    return i>=0?parts[i+1]:null;
-  }catch(e){return null;}
-}
-
-function playFilm(film){
-  $("filmsPanel").classList.remove("show");
-
-  const url=film.video_url||"";
-  if(film.type==="Weverse"||url.includes("weverse.io")){
-    notice("위버스는 외부 재생 제한 때문에 새 창으로 열게요.");
-    window.open(url,"_blank","noopener,noreferrer");
-    return;
-  }
-
-  const id=getYoutubeId(url);
-  if(!id){
-    notice("유튜브 주소를 확인해 주세요.");
-    return;
-  }
-
-  const iframe=$("screenVideo");
-  iframe.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
-  iframe.style.display="block";
-  notice("스크린에서 영상을 재생합니다.");
-}
-
-/* 작품 목록 열기 */
-$("adminToggle").addEventListener("contextmenu",e=>e.preventDefault());
-const filmButton=document.createElement("button");
-filmButton.className="small-btn";
-filmButton.textContent="상영 작품";
-filmButton.style.position="absolute";
-filmButton.style.top="12px";
-filmButton.style.right="12px";
-filmButton.style.zIndex="5";
-filmButton.onclick=()=>$("filmsPanel").classList.add("show");
-$("game").appendChild(filmButton);
-
-$("closeFilms").onclick=()=>$("filmsPanel").classList.remove("show");
-
-/* 관리자 */
-async function checkAdmin(user){
-  if(!user){isAdmin=false;return false;}
-  const {data,error}=await supabase.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();
-  if(error){console.error(error);isAdmin=false;return false;}
-  isAdmin=!!data;
-  return isAdmin;
-}
-
-$("adminToggle").onclick=()=>{
-  if(isAdmin)$("adminBox").classList.toggle("show");
-  else $("loginBox").classList.toggle("show");
-};
-
-$("loginBtn").onclick=async()=>{
-  const {data,error}=await supabase.auth.signInWithPassword({
-    email:$("adminEmail").value.trim(),
-    password:$("adminPassword").value
-  });
-  if(error){notice("로그인 정보를 확인해 주세요.");return;}
-  currentUser=data.user;
-  if(!await checkAdmin(currentUser)){
-    await supabase.auth.signOut();
-    currentUser=null;
-    notice("관리자 권한이 없는 계정이에요.");
-    return;
-  }
-  $("loginBox").classList.remove("show");
-  $("adminBox").classList.add("show");
-  $("adminToggle").textContent="관리자 페이지";
-  renderFilms();
-  notice("관리자로 로그인했어요.");
-};
-
-$("logoutBtn").onclick=async()=>{
-  await supabase.auth.signOut();
-  currentUser=null;
-  isAdmin=false;
-  $("adminBox").classList.remove("show");
-  $("adminToggle").textContent="관리자";
-  renderFilms();
-};
-
-supabase.auth.onAuthStateChange(async(_event,session)=>{
-  currentUser=session?.user||null;
-  if(currentUser&&await checkAdmin(currentUser)){
-    $("adminToggle").textContent="관리자 페이지";
-    $("adminBox").classList.add("show");
-  }else{
-    isAdmin=false;
-    $("adminToggle").textContent="관리자";
-    $("adminBox").classList.remove("show");
-  }
-  renderFilms();
-});
-
-$("addFilm").onclick=async()=>{
-  if(!isAdmin||!currentUser){notice("관리자 로그인이 필요해요.");return;}
-  const title=$("filmTitle").value.trim();
-  const video_url=$("filmUrl").value.trim();
-  if(!title||!video_url){notice("제목과 영상 주소를 입력해 주세요.");return;}
-
-  const {error}=await supabase.from("films").insert({
-    title,
-    type:$("filmType").value,
-    video_url,
-    poster_url:$("posterUrl").value.trim()||null,
-    description:$("filmDescription").value.trim()||null
-  });
-
-  if(error){console.error(error);notice("등록에 실패했어요.");return;}
-  $("filmTitle").value="";
-  $("filmUrl").value="";
-  $("posterUrl").value="";
-  $("filmDescription").value="";
-  await loadFilms();
-  notice("작품을 등록했어요.");
-};
-
-async function deleteFilm(id){
-  if(!isAdmin||!confirm("이 작품을 삭제할까요?"))return;
-  const {error}=await supabase.from("films").delete().eq("id",id);
-  if(error){notice("삭제에 실패했어요.");return;}
-  await loadFilms();
-  notice("삭제했어요.");
-}
-
-supabase.channel("nyajju-film-updates")
-  .on("postgres_changes",{event:"*",schema:"public",table:"films"},loadFilms)
-  .subscribe();
-
-/* 실행 */
-async function init(){
-  try{
-    createWorld();
-    await loadFilms();
-    await startRealtime();
-  }catch(error){
-    console.error(error);
-    notice("영화관을 불러오지 못했어요. 새로고침해 주세요.");
-  }
-}
-init();
+window.onload = replay;
 </script>
+
 </body>
 </html>
