@@ -9,9 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -39,28 +37,24 @@ body {
 
 .writing {
   position: absolute;
-  left: 14%;
-  top: 16.2%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   white-space: nowrap;
   font-family: 'Nanum Pen Script', cursive;
-  font-size: clamp(85px, 14vw, 145px);
+  font-size: clamp(110px, 18vw, 175px);
   font-weight: 400;
-  letter-spacing: 3px;
-  color: rgba(255, 220, 35, 0.76);
-  text-shadow:
-    0 0 1px rgba(255, 214, 0, 0.3);
+  letter-spacing: 5px;
+  color: rgba(255, 218, 25, 0.78);
+  text-shadow: 0 0 1px rgba(255, 214, 0, 0.3);
   width: 0;
   overflow: hidden;
-  animation: write 3.2s ease-in-out forwards;
+  animation: write 2.4s steps(35, end) forwards;
 }
 
 @keyframes write {
-  from {
-    width: 0;
-  }
-  to {
-    width: 90%;
-  }
+  from { width: 0; }
+  to { width: 100%; }
 }
 
 button {
@@ -81,7 +75,7 @@ button {
 <body>
 
 <div class="notebook">
-  <img src="IMG_1858.jpeg" alt="공책">
+  <img src="IMG_1860.jpeg" alt="공책">
   <div class="writing" id="writing">노유나</div>
 </div>
 
@@ -92,7 +86,7 @@ function replay() {
   const writing = document.getElementById("writing");
   writing.style.animation = "none";
   void writing.offsetWidth;
-  writing.style.animation = "write 3.2s ease-in-out forwards";
+  writing.style.animation = "write 2.4s steps(35, end) forwards";
 }
 </script>
 
